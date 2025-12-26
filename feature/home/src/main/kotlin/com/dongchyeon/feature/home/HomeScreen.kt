@@ -3,7 +3,6 @@ package com.dongchyeon.feature.home
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -11,9 +10,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,32 +54,23 @@ fun HomeScreen(
     uiState: HomeUiState,
     onIntent: (HomeIntent) -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("앨범 목록") }
+    when {
+        uiState.isLoading -> {
+            LoadingIndicator()
+        }
+        uiState.error != null -> {
+            ErrorMessage(
+                message = uiState.error,
+                onRetry = { onIntent(HomeIntent.Retry) }
             )
         }
-    ) { paddingValues ->
-        when {
-            uiState.isLoading -> {
-                LoadingIndicator()
-            }
-            uiState.error != null -> {
-                ErrorMessage(
-                    message = uiState.error,
-                    onRetry = { onIntent(HomeIntent.Retry) }
-                )
-            }
-            else -> {
-                AlbumList(
-                    albums = uiState.albums,
-                    onAlbumClick = { albumId ->
-                        onIntent(HomeIntent.NavigateToAlbum(albumId))
-                    },
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
+        else -> {
+            AlbumList(
+                albums = uiState.albums,
+                onAlbumClick = { albumId ->
+                    onIntent(HomeIntent.NavigateToAlbum(albumId))
+                },
+            )
         }
     }
 }
@@ -106,10 +94,6 @@ fun AlbumList(
             )
         },
         modifier = modifier,
-        itemSpacing = 8.dp,
-        maxRotateDeg = 90f,
-        maxTranslateXPx = 280f,
-        horizontalPadding = PaddingValues(start = 72.dp, end = 24.dp)
     )
 }
 

@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -30,7 +30,10 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * 반원 형태로 회전하는 Rotary Wheel Picker
@@ -39,7 +42,6 @@ import kotlin.math.abs
  * @param itemContent 각 아이템을 렌더링하는 컴포저블
  * @param onSelectedIndexChange 선택된 인덱스가 변경될 때 호출되는 콜백
  * @param modifier Modifier
- * @param itemSpacing 아이템 간 간격
  * @param maxRotateDeg 최대 회전 각도 (도)
  * @param maxTranslateXPx 최대 수평 이동 거리 (px)
  * @param horizontalPadding 좌우 패딩
@@ -50,10 +52,9 @@ fun <T> RotaryWheelPicker(
     itemContent: @Composable (item: T, isSelected: Boolean, modifier: Modifier) -> Unit,
     modifier: Modifier = Modifier,
     onSelectedIndexChange: (Int) -> Unit = {},
-    itemSpacing: Dp = 8.dp,
-    maxRotateDeg: Float = 90f,
-    maxTranslateXPx: Float = 280f,
-    horizontalPadding: PaddingValues = PaddingValues(start = 72.dp, end = 24.dp)
+    itemSpacing: Dp = (-80).dp,
+    curvatureFactor: Float = 1f,
+    yArcBlend: Float = 1f,
 ) {
     val listState = rememberLazyListState()
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
@@ -79,7 +80,7 @@ fun <T> RotaryWheelPicker(
     }
     
     // 선택된 인덱스가 변경되면 콜백 호출
-    androidx.compose.runtime.LaunchedEffect(selectedIndex) {
+    LaunchedEffect(selectedIndex) {
         onSelectedIndexChange(selectedIndex)
     }
 
@@ -101,36 +102,32 @@ fun <T> RotaryWheelPicker(
                 items = items,
                 key = { index, _ -> index }
             ) { index, item ->
-                // 현재 아이템의 "중앙에서의 거리" 기반으로 변형 값 계산
-                val transform = rememberItemTransform(listState, index)
-
-                val rotation = (transform.norm * maxRotateDeg).coerceIn(-maxRotateDeg, maxRotateDeg)
-                val translateX = -(abs(transform.norm) * maxTranslateXPx)
-                val scale = (1f - abs(transform.norm) * 0.10f).coerceIn(0.90f, 1f)
-                val alpha = (1f - abs(transform.norm) * 0.45f).coerceIn(0.40f, 1f)
+                val transform = rememberArcTransform(
+                    state = listState,
+                    index = index,
+                    curvatureFactor = curvatureFactor,
+                    yArcBlend = yArcBlend
+                )
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .graphicsLayer {
-                            rotationZ = rotation
-                            translationX = translateX
-                            scaleX = scale
-                            scaleY = scale
-                            this.alpha = alpha
+                            rotationZ = transform.rotationDeg
+                            translationX = transform.translationXPx
+                            translationY = transform.translationYPx
+                            alpha = transform.alpha
 
-                            // 왼쪽을 중심으로 회전
+                            // 왼쪽을 중심으로 회전(원하는 축이면 바꾸면 됨)
                             transformOrigin = TransformOrigin(0f, 0.5f)
-                        }
-                        .padding(horizontalPadding),
-                    contentAlignment = Alignment.CenterStart
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
                     itemContent(
                         item,
                         index == selectedIndex,
                         Modifier.onSizeChanged { size ->
-                            // 첫 번째 아이템의 높이를 한 번만 측정
                             if (index == 0 && measuredItemHeight == 0.dp) {
                                 measuredItemHeight = with(density) { size.height.toDp() }
                             }
@@ -143,29 +140,73 @@ fun <T> RotaryWheelPicker(
 }
 
 @Stable
-private data class ItemTransform(
-    val norm: Float // -1..1 근처 (중앙=0, 위/아래로 갈수록 절대값 증가)
+private data class ArcTransform(
+    val rotationDeg: Float,
+    val translationXPx: Float,
+    val translationYPx: Float,
+    val alpha: Float,
 )
 
 /**
- * index 아이템이 viewport 중심에서 얼마나 떨어졌는지 정규화해서 돌려줌.
+ * "보이는 viewport 전체"가 항상 원호를 유지하도록 radius를 동적으로 잡는다.
+ *
+ * - y = itemCenter - viewportCenter
+ * - R = viewportHalf + itemHalf  (=> 보이는 가장자리 아이템도 |y| <= R 보장)
+ * - θ = asin(y/R)
+ * - rotationZ = θ(deg)
+ * - x = -R * (1 - cosθ)
  */
 @Composable
-private fun rememberItemTransform(state: LazyListState, index: Int): ItemTransform {
-    return remember(state, index) {
+private fun rememberArcTransform(
+    state: LazyListState,
+    index: Int,
+    curvatureFactor: Float,
+    yArcBlend: Float,
+): ArcTransform {
+    return remember(state, index, curvatureFactor, yArcBlend) {
         derivedStateOf {
             val layout = state.layoutInfo
             val info = layout.visibleItemsInfo.firstOrNull { it.index == index }
-                ?: return@derivedStateOf ItemTransform(norm = 2f)
+                ?: return@derivedStateOf ArcTransform(0f, 0f, 0f, 0.4f)
 
-            val viewportCenter = (layout.viewportStartOffset + layout.viewportEndOffset) / 2f
+            val viewportStart = layout.viewportStartOffset.toFloat()
+            val viewportEnd = layout.viewportEndOffset.toFloat()
+            val viewportCenter = (viewportStart + viewportEnd) / 2f
+            val viewportHalf = (viewportEnd - viewportStart) / 2f
+
             val itemCenter = info.offset + info.size / 2f
+            val y = itemCenter - viewportCenter
 
-            // 화면 높이 기준으로 정규화 (-1..1 근처)
-            val half = (layout.viewportEndOffset - layout.viewportStartOffset) / 2f
-            val norm = ((itemCenter - viewportCenter) / half).coerceIn(-2f, 2f)
+            // y 범위 기준(화면 안 전체): [-viewportHalf, viewportHalf]
+            val yMax = (viewportHalf + info.size / 2f).coerceAtLeast(1f)
+            val yNorm = (y / yMax).coerceIn(-1f, 1f)
 
-            ItemTransform(norm = norm)
+            // 선형 θ (가장자리로 갈수록 가속되는 asin 제거)
+            val maxTheta = (PI / 2).toFloat()
+            val theta = yNorm * maxTheta
+
+            // 가로 반지름(원호 휨 정도)
+            val xRadius = (yMax * curvatureFactor).coerceAtLeast(1f)
+
+            // 원호 수식
+            val rotationDeg = theta * (180f / PI.toFloat())
+            val translationX = -xRadius * (1f - cos(theta.toDouble()).toFloat())
+
+            // 세로도 원호 위로 “재배치”해서 간격을 압축
+            val yArc = yMax * sin(theta.toDouble()).toFloat()
+            val yBlended = lerp(y, yArc, yArcBlend.coerceIn(0f, 1f))
+            val translationY = yBlended - y
+
+            val alpha = (1f - abs(yNorm) * 0.45f).coerceIn(0.40f, 1f)
+
+            ArcTransform(
+                rotationDeg = rotationDeg,
+                translationXPx = translationX,
+                translationYPx = translationY,
+                alpha = alpha
+            )
         }
     }.value
 }
+
+private fun lerp(a: Float, b: Float, t: Float): Float = a + (b - a) * t
