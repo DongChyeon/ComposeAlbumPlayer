@@ -48,4 +48,14 @@ class AlbumRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+    
+    override suspend fun getTrackById(trackId: String): Result<Track> {
+        return try {
+            val response = albumApiService.getTrack(trackId = trackId)
+            val track = response.data.toDomain()
+            Result.success(track)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

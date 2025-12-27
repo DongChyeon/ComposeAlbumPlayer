@@ -2,6 +2,7 @@ package com.dongchyeon.core.network.api
 
 import com.dongchyeon.core.network.model.AlbumResponse
 import com.dongchyeon.core.network.model.PlaylistResponse
+import com.dongchyeon.core.network.model.TrackResponse
 import com.dongchyeon.core.network.model.TracksResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -30,4 +31,9 @@ interface AlbumApiService {
     suspend fun getPlaylistTracks(
         @Path("playlist_id") playlistId: String
     ): TracksResponse
+
+    @GET("v1/tracks/{track_id}")
+    suspend fun getTrack(
+        @Path("track_id") trackId: String
+    ): TrackResponse
 }

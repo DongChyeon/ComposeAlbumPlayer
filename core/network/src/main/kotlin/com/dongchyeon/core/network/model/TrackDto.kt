@@ -10,6 +10,12 @@ data class TracksResponse(
 )
 
 @Serializable
+data class TrackResponse(
+    @SerialName("data")
+    val data: TrackDto
+)
+
+@Serializable
 data class TrackDto(
     @SerialName("id")
     val id: String,

@@ -8,7 +8,9 @@ data class PlayerUiState(
     val playbackState: PlaybackState = PlaybackState.Idle,
     val currentPosition: Long = 0L,
     val duration: Long = 0L,
-    val isPlaying: Boolean = false
+    val isPlaying: Boolean = false,
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
 
 sealed interface PlayerIntent {

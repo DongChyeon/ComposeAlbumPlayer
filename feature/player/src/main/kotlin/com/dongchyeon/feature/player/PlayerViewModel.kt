@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dongchyeon.domain.model.PlaybackState
 import com.dongchyeon.domain.model.Track
+import com.dongchyeon.domain.repository.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,15 +18,50 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle
-    // TODO: Inject PlayerRepository when implementing ExoPlayer integration
+    savedStateHandle: SavedStateHandle,
+    private val albumRepository: AlbumRepository
 ) : ViewModel() {
+    
+    private val trackId: String = savedStateHandle["trackId"] ?: ""
     
     private val _uiState = MutableStateFlow(PlayerUiState())
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
     
     private val _sideEffect = Channel<PlayerSideEffect>()
     val sideEffect = _sideEffect.receiveAsFlow()
+    
+    init {
+        if (trackId.isNotEmpty()) {
+            loadTrack()
+        }
+    }
+    
+    private fun loadTrack() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            
+            albumRepository.getTrackById(trackId)
+                .onSuccess { track ->
+                    _uiState.update {
+                        it.copy(
+                            currentTrack = track,
+                            playbackState = PlaybackState.Buffering,
+                            duration = track.duration,
+                            isLoading = false,
+                            error = null
+                        )
+                    }
+                }
+                .onFailure { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = exception.message ?: "트랙을 불러올 수 없습니다"
+                        )
+                    }
+                }
+        }
+    }
     
     fun handleIntent(intent: PlayerIntent) {
         when (intent) {
