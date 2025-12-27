@@ -32,7 +32,7 @@ class AlbumRepositoryImpl @Inject constructor(
         return try {
             val response = albumApiService.getPlaylist(playlistId = id)
             
-            val album = response.data?.toDomain()
+            val album = response.data?.firstOrNull()?.toDomain()
             if (album != null) {
                 Result.success(album)
             } else {
@@ -47,7 +47,7 @@ class AlbumRepositoryImpl @Inject constructor(
         return try {
             val response = albumApiService.getPlaylist(playlistId = albumId)
             
-            val album = response.data?.toDomain()
+            val album = response.data?.firstOrNull()?.toDomain()
             if (album != null) {
                 Result.success(album.tracks)
             } else {

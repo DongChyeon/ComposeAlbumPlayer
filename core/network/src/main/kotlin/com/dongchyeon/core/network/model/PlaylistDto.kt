@@ -12,7 +12,7 @@ data class PlaylistResponse(
 @Serializable
 data class AlbumResponse(
     @SerialName("data")
-    val data: PlaylistDto? = null
+    val data: List<PlaylistDto>? = null
 )
 
 @Serializable
