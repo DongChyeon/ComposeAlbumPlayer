@@ -6,9 +6,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.rememberNavController
 import com.dongchyeon.compose.album.player.navigation.NavGraph
+import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,7 +19,7 @@ fun AlbumPlayerApp(
     
     Scaffold(
         modifier = modifier.fillMaxSize(),
-            containerColor = Color.White,
+        containerColor = AlbumPlayerTheme.colorScheme.background,
     ) { paddingValues ->
         NavGraph(
             navController = navController,

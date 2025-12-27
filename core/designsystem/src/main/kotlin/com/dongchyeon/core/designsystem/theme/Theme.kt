@@ -3,51 +3,30 @@ package com.dongchyeon.core.designsystem.theme
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryDark,
-    onPrimary = OnPrimaryDark,
-    primaryContainer = PrimaryContainerDark,
-    onPrimaryContainer = OnPrimaryContainerDark,
-    secondary = SecondaryDark,
-    onSecondary = OnSecondaryDark,
-    secondaryContainer = SecondaryContainerDark,
-    onSecondaryContainer = OnSecondaryContainerDark,
-    background = BackgroundDark,
-    onBackground = OnBackgroundDark,
-    surface = SurfaceDark,
-    onSurface = OnSurfaceDark
-)
+private val LocalAlbumPlayerColorScheme = staticCompositionLocalOf { DarkColorScheme }
+private val LocalAlbumPlayerTypography = staticCompositionLocalOf { AlbumPlayerTypography }
 
-private val LightColorScheme = lightColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    onTertiaryContainer = OnTertiaryContainer,
-    background = Background,
-    onBackground = OnBackground,
-    surface = Surface,
-    onSurface = OnSurface,
-    surfaceVariant = SurfaceVariant,
-    onSurfaceVariant = OnSurfaceVariant,
-    error = Error,
-    onError = OnError,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer
+private val MaterialDarkColorScheme = darkColorScheme(
+    primary = Main2,
+    onPrimary = Gray50,
+    primaryContainer = Main1,
+    onPrimaryContainer = Gray50,
+    background = Background1,
+    onBackground = Gray50,
+    surface = Gray950,
+    onSurface = Gray50,
+    error = ErrorColor,
+    onError = Gray50,
 )
 
 @Composable
@@ -55,7 +34,6 @@ fun AlbumPlayerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val view = LocalView.current
     
     if (!view.isInEditMode) {
@@ -66,9 +44,26 @@ fun AlbumPlayerTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalAlbumPlayerColorScheme provides DarkColorScheme,
+        LocalAlbumPlayerTypography provides AlbumPlayerTypography
+    ) {
+        MaterialTheme(
+            colorScheme = MaterialDarkColorScheme,
+            typography = AlbumPlayerTypography,
+            content = content
+        )
+    }
+}
+
+object AlbumPlayerTheme {
+    val colorScheme: AlbumPlayerColorScheme
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAlbumPlayerColorScheme.current
+    
+    val typography: Typography
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAlbumPlayerTypography.current
 }
