@@ -10,7 +10,6 @@ data class AlbumUiState(
 )
 
 sealed interface AlbumIntent {
-    data class LoadAlbum(val albumId: String) : AlbumIntent
     data object Retry : AlbumIntent
     data class PlayTrack(val track: Track) : AlbumIntent
     data object NavigateBack : AlbumIntent

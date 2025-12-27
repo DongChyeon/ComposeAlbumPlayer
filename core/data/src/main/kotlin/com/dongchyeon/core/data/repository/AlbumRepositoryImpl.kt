@@ -28,16 +28,12 @@ class AlbumRepositoryImpl @Inject constructor(
         }
     }
     
-    override suspend fun getAlbumById(id: String): Result<Album> {
+    override suspend fun getAlbumById(albumId: String): Result<Album> {
         return try {
-            val response = albumApiService.getPlaylist(playlistId = id)
-            
+            val response = albumApiService.getPlaylist(playlistId = albumId)
             val album = response.data?.firstOrNull()?.toDomain()
-            if (album != null) {
-                Result.success(album)
-            } else {
-                Result.failure(Exception("Album not found"))
-            }
+                ?: return Result.failure(Exception("Album not found"))
+            Result.success(album)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -45,14 +41,9 @@ class AlbumRepositoryImpl @Inject constructor(
     
     override suspend fun getTracksByAlbumId(albumId: String): Result<List<Track>> {
         return try {
-            val response = albumApiService.getPlaylist(playlistId = albumId)
-            
-            val album = response.data?.firstOrNull()?.toDomain()
-            if (album != null) {
-                Result.success(album.tracks)
-            } else {
-                Result.failure(Exception("Album not found"))
-            }
+            val response = albumApiService.getPlaylistTracks(playlistId = albumId)
+            val tracks = response.data.toDomain(albumId = albumId)
+            Result.success(tracks)
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -93,8 +93,8 @@ fun HomeScreen(
                 Box(modifier = Modifier.fillMaxSize()) {
                     AlbumList(
                         albums = uiState.albums,
-                        onAlbumClick = { albumId ->
-                            onIntent(HomeIntent.NavigateToAlbum(albumId))
+                        onAlbumClick = { album ->
+                            onIntent(HomeIntent.NavigateToAlbum(album.id))
                         },
                         onLoadMore = {
                             onIntent(HomeIntent.LoadMoreAlbums)
@@ -167,7 +167,7 @@ fun ScrollHint() {
 @Composable
 fun AlbumList(
     albums: List<Album>,
-    onAlbumClick: (String) -> Unit,
+    onAlbumClick: (Album) -> Unit,
     onLoadMore: () -> Unit,
     onScrollStarted: () -> Unit,
     modifier: Modifier = Modifier
@@ -181,7 +181,7 @@ fun AlbumList(
                 title = album.title,
                 artist = album.artist,
                 artworkUrl = album.artworkUrl,
-                onClick = { onAlbumClick(album.id) },
+                onClick = { onAlbumClick(album) },
                 isSelected = isSelected,
                 modifier = itemModifier.size(200.dp)
             )

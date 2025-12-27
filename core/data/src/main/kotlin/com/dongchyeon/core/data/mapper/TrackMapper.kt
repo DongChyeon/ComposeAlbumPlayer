@@ -9,8 +9,8 @@ fun TrackDto.toDomain(albumId: String? = null): Track {
         title = title,
         artist = user?.name ?: "Unknown Artist",
         duration = duration.toLong() * 1000, // Convert seconds to milliseconds
-        streamUrl = streamUrl ?: "",
-        artworkUrl = artwork?.large ?: artwork?.medium ?: artwork?.small,
+        streamUrl = stream?.url ?: "",
+        artworkUrl = artwork?.large ?: artwork?.medium ?: artwork?.small ?: "",
         albumId = albumId
     )
 }

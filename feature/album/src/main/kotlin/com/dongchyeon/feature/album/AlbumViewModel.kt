@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.dongchyeon.domain.model.Track
 import com.dongchyeon.domain.repository.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,42 +31,62 @@ class AlbumViewModel @Inject constructor(
     val sideEffect = _sideEffect.receiveAsFlow()
     
     init {
-        if (albumId.isNotEmpty()) {
-            handleIntent(AlbumIntent.LoadAlbum(albumId))
-        }
+        loadAlbumData()
     }
     
     fun handleIntent(intent: AlbumIntent) {
         when (intent) {
-            is AlbumIntent.LoadAlbum -> loadAlbum(intent.albumId)
-            is AlbumIntent.Retry -> loadAlbum(albumId)
+            is AlbumIntent.Retry -> loadAlbumData()
             is AlbumIntent.PlayTrack -> playTrack(intent.track)
             is AlbumIntent.NavigateBack -> navigateBack()
         }
     }
     
-    private fun loadAlbum(albumId: String) {
+    private fun loadAlbumData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null
+                )
+            }
             
-            albumRepository.getAlbumById(albumId)
-                .onSuccess { album ->
+            try {
+                // 앨범 정보와 트랙 목록을 병렬로 로드
+                val albumDeferred = async { albumRepository.getAlbumById(albumId) }
+                val tracksDeferred = async { albumRepository.getTracksByAlbumId(albumId) }
+                
+                val albumResult = albumDeferred.await()
+                val tracksResult = tracksDeferred.await()
+                
+                if (albumResult.isSuccess && tracksResult.isSuccess) {
+                    val album = albumResult.getOrNull()!!
+                    val tracks = tracksResult.getOrNull()!!
+                    
                     _uiState.update {
                         it.copy(
-                            album = album,
+                            album = album.copy(tracks = tracks),
                             isLoading = false,
                             error = null
                         )
                     }
-                }
-                .onFailure { exception ->
+                } else {
+                    val error = albumResult.exceptionOrNull() ?: tracksResult.exceptionOrNull()
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = exception.message ?: "알 수 없는 오류가 발생했습니다"
+                            error = error?.message ?: "알 수 없는 오류가 발생했습니다"
                         )
                     }
                 }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "알 수 없는 오류가 발생했습니다"
+                    )
+                }
+            }
         }
     }
     
