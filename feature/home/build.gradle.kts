@@ -7,9 +7,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":domain"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:ui"))
+    implementation(projects.domain)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.ui)
     
     // Image Loading
     implementation(libs.coil.compose)

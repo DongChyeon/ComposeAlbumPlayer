@@ -6,22 +6,22 @@ plugins {
 }
 
 android {
-    namespace = "com.dongchyeon.core.data"
+    namespace = "com.dongchyeon.core.network"
 }
 
 dependencies {
-    implementation(projects.domain)
-    implementation(projects.core.network)
-    
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     
+    // Network
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.kotlinx.serialization.json)
+    
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
-    
-    // Media3
-    implementation(libs.androidx.media3.exoplayer)
-    implementation(libs.androidx.media3.session)
 }

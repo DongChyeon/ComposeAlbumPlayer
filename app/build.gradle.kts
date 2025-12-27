@@ -31,13 +31,13 @@ android {
 
 dependencies {
     // Modules
-    implementation(project(":domain"))
-    implementation(project(":core:data"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:ui"))
-    implementation(project(":feature:home"))
-    implementation(project(":feature:album"))
-    implementation(project(":feature:player"))
+    implementation(projects.domain)
+    implementation(projects.core.data)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.ui)
+    implementation(projects.feature.home)
+    implementation(projects.feature.album)
+    implementation(projects.feature.player)
     
     // Android Core
     implementation(libs.androidx.core.ktx)

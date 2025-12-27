@@ -1,3 +1,5 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     includeBuild("build-logic")
     repositories {
@@ -24,6 +26,7 @@ rootProject.name = "ComposeAlbumPlayer"
 include(":app")
 include(":domain")
 include(":core:data")
+include(":core:network")
 include(":core:ui")
 include(":core:designsystem")
 include(":feature:home")
