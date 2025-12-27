@@ -1,13 +1,14 @@
 package com.dongchyeon.feature.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,10 +16,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.SubcomposeAsyncImage
 import com.dongchyeon.core.designsystem.theme.Spacing
 import com.dongchyeon.core.ui.components.ErrorMessage
 import com.dongchyeon.core.ui.components.LoadingIndicator
@@ -104,48 +107,64 @@ fun AlbumItem(
     modifier: Modifier = Modifier,
     isSelected: Boolean = false
 ) {
-    Card(
-        modifier = modifier
-            .size(200.dp)
-            .border(width = 1.dp, color = Color.Black, shape = CardDefaults.shape)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) 
-                MaterialTheme.colorScheme.primaryContainer 
-            else 
-                MaterialTheme.colorScheme.surface
-        )
-    ) {
+    val fallbackContent: @Composable () -> Unit = {
         Column(
             modifier = Modifier.padding(Spacing.medium)
         ) {
             Text(
                 text = album.title,
                 style = MaterialTheme.typography.titleLarge,
-                color = if (isSelected) 
-                    MaterialTheme.colorScheme.onPrimaryContainer 
-                else 
+                color = if (isSelected)
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                else
                     MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = album.artist,
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (isSelected) 
+                color = if (isSelected)
                     MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                else 
+                else
                     MaterialTheme.colorScheme.onSurfaceVariant
             )
             album.releaseDate?.let { date ->
                 Text(
                     text = date,
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (isSelected) 
+                    color = if (isSelected)
                         MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
-                    else 
+                    else
                         MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+    
+    Box(
+        modifier = modifier
+            .size(200.dp)
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = Color.Gray
+                ),
+                shape = RoundedCornerShape(4.dp)
+            )
+            .clip(
+                shape = RoundedCornerShape(4.dp)
+            )
+            .clickable(onClick = onClick)
+    ) {
+        if (album.artworkUrl.isNotEmpty()) {
+            SubcomposeAsyncImage(
+                model = album.artworkUrl,
+                contentDescription = album.title,
+                modifier = Modifier.size(200.dp),
+                error = { fallbackContent() }
+            )
+        } else {
+            fallbackContent()
         }
     }
 }
