@@ -10,7 +10,7 @@ fun PlaylistDto.toDomain(): Album {
         artist = user?.name ?: "Unknown Artist",
         artworkUrl = artwork?.large ?: artwork?.medium ?: artwork?.small,
         releaseDate = createdAt,
-        tracks = emptyList() // Tracks are omitted in trending playlists API
+        tracks = tracks?.toDomain(albumId = id) ?: emptyList()
     )
 }
 

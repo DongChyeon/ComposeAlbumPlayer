@@ -22,7 +22,7 @@ data class PlaylistDto(
     @SerialName("playlist_name")
     val playlistName: String,
     @SerialName("playlist_contents")
-    val playlistContents: PlaylistContents? = null,
+    val playlistContents: List<PlaylistContentDto>? = null,
     @SerialName("user")
     val user: UserDto? = null,
     @SerialName("artwork")
@@ -30,19 +30,19 @@ data class PlaylistDto(
     @SerialName("created_at")
     val createdAt: String? = null,
     @SerialName("description")
-    val description: String? = null
+    val description: String? = null,
+    @SerialName("track_count")
+    val trackCount: Int? = null,
+    @SerialName("tracks")
+    val tracks: List<TrackDto>? = null
 )
 
 @Serializable
-data class PlaylistContents(
-    @SerialName("track_ids")
-    val trackIds: List<TrackIdDto>? = null
-)
-
-@Serializable
-data class TrackIdDto(
-    @SerialName("track")
-    val track: String,
-    @SerialName("time")
-    val time: Long? = null
+data class PlaylistContentDto(
+    @SerialName("track_id")
+    val trackId: String,
+    @SerialName("timestamp")
+    val timestamp: Long,
+    @SerialName("metadata_timestamp")
+    val metadataTimestamp: Long
 )
