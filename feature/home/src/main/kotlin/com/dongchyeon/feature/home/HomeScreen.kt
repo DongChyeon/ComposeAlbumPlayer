@@ -1,17 +1,26 @@
 package com.dongchyeon.feature.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -87,17 +97,77 @@ fun HomeScreen(
                 )
             }
             else -> {
-                AlbumList(
-                    albums = uiState.albums,
-                    onAlbumClick = { albumId ->
-                        onIntent(HomeIntent.NavigateToAlbum(albumId))
-                    },
-                    onLoadMore = {
-                        onIntent(HomeIntent.LoadMoreAlbums)
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AlbumList(
+                        albums = uiState.albums,
+                        onAlbumClick = { albumId ->
+                            onIntent(HomeIntent.NavigateToAlbum(albumId))
+                        },
+                        onLoadMore = {
+                            onIntent(HomeIntent.LoadMoreAlbums)
+                        },
+                        onScrollStarted = {
+                            if (uiState.showScrollHint) {
+                                onIntent(HomeIntent.DismissScrollHint)
+                            }
+                        }
+                    )
+                    
+                    // 스크롤 힌트 오버레이
+                    AnimatedVisibility(
+                        visible = uiState.showScrollHint,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                    ) {
+                        ScrollHint()
                     }
-                )
+                }
             }
         }
+    }
+}
+
+@Composable
+fun ScrollHint() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .background(
+                color = AlbumPlayerTheme.colorScheme.background.copy(alpha = 0.8f),
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(horizontal = 32.dp, vertical = 24.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.KeyboardArrowUp,
+            contentDescription = null,
+            tint = AlbumPlayerTheme.colorScheme.main2,
+            modifier = Modifier.size(40.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Scroll & Click",
+            style = AlbumPlayerTheme.typography.titleMedium,
+            color = AlbumPlayerTheme.colorScheme.gray50,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "to select Album",
+            style = AlbumPlayerTheme.typography.bodySmall,
+            color = AlbumPlayerTheme.colorScheme.gray400,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Icon(
+            imageVector = Icons.Default.KeyboardArrowDown,
+            contentDescription = null,
+            tint = AlbumPlayerTheme.colorScheme.main2,
+            modifier = Modifier.size(40.dp)
+        )
     }
 }
 
@@ -106,6 +176,7 @@ fun AlbumList(
     albums: List<Album>,
     onAlbumClick: (String) -> Unit,
     onLoadMore: () -> Unit,
+    onScrollStarted: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (albums.isEmpty()) return
@@ -121,6 +192,7 @@ fun AlbumList(
             )
         },
         onLoadMore = onLoadMore,
+        onScrollStarted = onScrollStarted,
         modifier = modifier,
     )
 }

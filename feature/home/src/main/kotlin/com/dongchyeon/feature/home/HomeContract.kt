@@ -16,13 +16,15 @@ data class HomeUiState(
     val albums: List<Album> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val paginationState: PaginationState = PaginationState()
+    val paginationState: PaginationState = PaginationState(),
+    val showScrollHint: Boolean = true
 )
 
 sealed interface HomeIntent {
     data object LoadAlbums : HomeIntent
     data object LoadMoreAlbums : HomeIntent
     data object Retry : HomeIntent
+    data object DismissScrollHint : HomeIntent
     data class NavigateToAlbum(val albumId: String) : HomeIntent
 }
 

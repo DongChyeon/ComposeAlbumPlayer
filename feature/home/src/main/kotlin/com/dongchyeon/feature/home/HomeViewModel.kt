@@ -33,8 +33,13 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.LoadAlbums -> loadAlbums()
             is HomeIntent.LoadMoreAlbums -> loadMoreAlbums()
             is HomeIntent.Retry -> retry()
+            is HomeIntent.DismissScrollHint -> dismissScrollHint()
             is HomeIntent.NavigateToAlbum -> navigateToAlbum(intent.albumId)
         }
+    }
+    
+    private fun dismissScrollHint() {
+        _uiState.update { it.copy(showScrollHint = false) }
     }
     
     private fun loadAlbums() {

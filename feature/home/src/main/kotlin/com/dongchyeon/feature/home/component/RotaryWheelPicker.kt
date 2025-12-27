@@ -54,6 +54,7 @@ fun <T> RotaryWheelPicker(
     modifier: Modifier = Modifier,
     onSelectedIndexChange: (Int) -> Unit = {},
     onLoadMore: () -> Unit = {},
+    onScrollStarted: () -> Unit = {},
     itemSpacing: Dp = (-80).dp,
     curvatureFactor: Float = 1f,
     yArcBlend: Float = 1f,
@@ -86,13 +87,23 @@ fun <T> RotaryWheelPicker(
         onSelectedIndexChange(selectedIndex)
     }
     
+    // 스크롤 시작 감지
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.isScrollInProgress }
+            .collect { isScrolling ->
+                if (isScrolling) {
+                    onScrollStarted()
+                }
+            }
+    }
+    
     // 리스트의 끝에 도달했는지 확인하고 더 많은 데이터 로드
     LaunchedEffect(listState) {
         snapshotFlow {
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
             lastVisibleItem?.index
         }.collect { lastVisibleIndex ->
-            if (lastVisibleIndex != null && lastVisibleIndex >= items.size - 3) {
+            if (lastVisibleIndex != null && lastVisibleIndex >= items.size - 5) {
                 onLoadMore()
             }
         }
