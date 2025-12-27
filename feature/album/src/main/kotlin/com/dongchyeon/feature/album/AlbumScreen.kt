@@ -2,6 +2,7 @@ package com.dongchyeon.feature.album
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,10 +13,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -81,6 +84,9 @@ fun AlbumScreen(
                 album = uiState.album,
                 onTrackClick = { track ->
                     onIntent(AlbumIntent.PlayTrack(track))
+                },
+                onNavigateBack = {
+                    onIntent(AlbumIntent.NavigateBack)
                 }
             )
         }
@@ -91,48 +97,79 @@ fun AlbumScreen(
 fun AlbumContent(
     album: Album,
     onTrackClick: (Track) -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            horizontal = Spacing.medium,
-            vertical = Spacing.large
-        ),
-        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Column(
+        modifier = modifier.fillMaxSize()
     ) {
-        item {
-            AlbumItem(
-                title = album.title,
-                artist = album.artist,
-                artworkUrl = album.artworkUrl,
-                onClick = { },
-                isSelected = false,
-                modifier = Modifier
-                    .size(200.dp)
-            )
-
-            Text(
-                text = album.title,
-                style = AlbumPlayerTheme.typography.headlineSmall,
-                color = AlbumPlayerTheme.colorScheme.gray50,
-                modifier = Modifier.padding(top = Spacing.medium)
-            )
-
-            Text(
-                text = album.artist,
-                style = AlbumPlayerTheme.typography.bodyMedium,
-                color = AlbumPlayerTheme.colorScheme.gray50,
-                modifier = Modifier.padding(top = Spacing.small)
-            )
+        // TopBar
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.small)
+        ) {
+            IconButton(
+                onClick = onNavigateBack,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "뒤로 가기",
+                    tint = AlbumPlayerTheme.colorScheme.gray50
+                )
+            }
         }
         
-        items(album.tracks) { track ->
-            TrackItem(
-                track = track,
-                onClick = { onTrackClick(track) }
-            )
+        // Content
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(Spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+
+            item {
+                AlbumItem(
+                    title = album.title,
+                    artist = album.artist,
+                    artworkUrl = album.artworkUrl,
+                    onClick = { },
+                    isSelected = false,
+                    modifier = Modifier
+                        .size(200.dp)
+                )
+
+                Text(
+                    text = album.title,
+                    style = AlbumPlayerTheme.typography.headlineSmall,
+                    color = AlbumPlayerTheme.colorScheme.gray50,
+                    modifier = Modifier.padding(top = Spacing.medium)
+                )
+
+                Text(
+                    text = album.artist,
+                    style = AlbumPlayerTheme.typography.bodyMedium,
+                    color = AlbumPlayerTheme.colorScheme.gray50,
+                    modifier = Modifier.padding(top = Spacing.small)
+                )
+
+                Text(
+                    text = "Track List",
+                    style = AlbumPlayerTheme.typography.bodyLarge,
+                    color = AlbumPlayerTheme.colorScheme.gray50,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = Spacing.medium)
+                )
+            }
+
+            items(album.tracks) { track ->
+                TrackItem(
+                    track = track,
+                    onClick = { onTrackClick(track) }
+                )
+            }
         }
     }
 }
