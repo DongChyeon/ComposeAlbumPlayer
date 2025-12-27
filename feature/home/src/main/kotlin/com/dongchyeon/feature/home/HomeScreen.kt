@@ -73,6 +73,9 @@ fun HomeScreen(
                 onAlbumClick = { albumId ->
                     onIntent(HomeIntent.NavigateToAlbum(albumId))
                 },
+                onLoadMore = {
+                    onIntent(HomeIntent.LoadMoreAlbums)
+                }
             )
         }
     }
@@ -82,6 +85,7 @@ fun HomeScreen(
 fun AlbumList(
     albums: List<Album>,
     onAlbumClick: (String) -> Unit,
+    onLoadMore: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (albums.isEmpty()) return
@@ -96,6 +100,7 @@ fun AlbumList(
                 modifier = itemModifier
             )
         },
+        onLoadMore = onLoadMore,
         modifier = modifier,
     )
 }

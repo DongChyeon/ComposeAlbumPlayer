@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
@@ -52,6 +53,7 @@ fun <T> RotaryWheelPicker(
     itemContent: @Composable (item: T, isSelected: Boolean, modifier: Modifier) -> Unit,
     modifier: Modifier = Modifier,
     onSelectedIndexChange: (Int) -> Unit = {},
+    onLoadMore: () -> Unit = {},
     itemSpacing: Dp = (-80).dp,
     curvatureFactor: Float = 1f,
     yArcBlend: Float = 1f,
@@ -82,6 +84,18 @@ fun <T> RotaryWheelPicker(
     // 선택된 인덱스가 변경되면 콜백 호출
     LaunchedEffect(selectedIndex) {
         onSelectedIndexChange(selectedIndex)
+    }
+    
+    // 리스트의 끝에 도달했는지 확인하고 더 많은 데이터 로드
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+            lastVisibleItem?.index
+        }.collect { lastVisibleIndex ->
+            if (lastVisibleIndex != null && lastVisibleIndex >= items.size - 3) {
+                onLoadMore()
+            }
+        }
     }
 
     BoxWithConstraints(modifier) {

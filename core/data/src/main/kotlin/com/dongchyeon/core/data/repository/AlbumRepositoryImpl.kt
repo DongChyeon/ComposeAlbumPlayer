@@ -11,12 +11,14 @@ class AlbumRepositoryImpl @Inject constructor(
     private val albumApiService: AlbumApiService
 ) : AlbumRepository {
     
-    override suspend fun getAlbums(): Result<List<Album>> {
+    override suspend fun getAlbums(page: Int, limit: Int): Result<List<Album>> {
         return try {
+            val offset = page * limit
             val response = albumApiService.getTrendingPlaylists(
                 type = "album",
                 omitTracks = true,
-                limit = 10
+                limit = limit,
+                offset = offset
             )
             
             val albums = response.data?.toDomain() ?: emptyList()
