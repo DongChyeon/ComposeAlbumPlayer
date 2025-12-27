@@ -1,34 +1,22 @@
 package com.dongchyeon.feature.player
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.dongchyeon.core.ui.base.BaseViewModel
 import com.dongchyeon.domain.model.PlaybackState
 import com.dongchyeon.domain.model.Track
 import com.dongchyeon.domain.repository.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val albumRepository: AlbumRepository
-) : ViewModel() {
+) : BaseViewModel<PlayerUiState, PlayerIntent, PlayerSideEffect>(
+    initialState = PlayerUiState()
+) {
     
     private val trackId: String = savedStateHandle["trackId"] ?: ""
-    
-    private val _uiState = MutableStateFlow(PlayerUiState())
-    val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
-    
-    private val _sideEffect = Channel<PlayerSideEffect>()
-    val sideEffect = _sideEffect.receiveAsFlow()
     
     init {
         if (trackId.isNotEmpty()) {
@@ -37,12 +25,12 @@ class PlayerViewModel @Inject constructor(
     }
     
     private fun loadTrack() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+        launchInScope {
+            updateState { it.copy(isLoading = true) }
             
             albumRepository.getTrackById(trackId)
                 .onSuccess { track ->
-                    _uiState.update {
+                    updateState {
                         it.copy(
                             currentTrack = track,
                             playbackState = PlaybackState.Buffering,
@@ -53,7 +41,7 @@ class PlayerViewModel @Inject constructor(
                     }
                 }
                 .onFailure { exception ->
-                    _uiState.update {
+                    updateState {
                         it.copy(
                             isLoading = false,
                             error = exception.message ?: "트랙을 불러올 수 없습니다"
@@ -63,7 +51,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
     
-    fun handleIntent(intent: PlayerIntent) {
+    override fun handleIntent(intent: PlayerIntent) {
         when (intent) {
             is PlayerIntent.InitializePlayer -> initializePlayer(intent.track)
             is PlayerIntent.PlayPause -> togglePlayPause()
@@ -75,61 +63,44 @@ class PlayerViewModel @Inject constructor(
     }
     
     private fun initializePlayer(track: Track) {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    currentTrack = track,
-                    playbackState = PlaybackState.Playing,
-                    isPlaying = true,
-                    duration = track.duration
-                )
-            }
-            // TODO: Initialize ExoPlayer with track
+        updateState {
+            it.copy(
+                currentTrack = track,
+                playbackState = PlaybackState.Playing,
+                isPlaying = true,
+                duration = track.duration
+            )
         }
+        // TODO: Initialize ExoPlayer with track
     }
     
     private fun togglePlayPause() {
-        viewModelScope.launch {
-            val currentIsPlaying = _uiState.value.isPlaying
-            _uiState.update {
-                it.copy(
-                    isPlaying = !currentIsPlaying,
-                    playbackState = if (!currentIsPlaying) PlaybackState.Playing else PlaybackState.Paused
-                )
-            }
-            // TODO: Control ExoPlayer playback
+        val currentIsPlaying = currentState.isPlaying
+        updateState {
+            it.copy(
+                isPlaying = !currentIsPlaying,
+                playbackState = if (!currentIsPlaying) PlaybackState.Playing else PlaybackState.Paused
+            )
         }
+        // TODO: Control ExoPlayer playback
     }
     
     private fun seekTo(position: Long) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(currentPosition = position) }
-            // TODO: Seek ExoPlayer to position
-        }
+        updateState { it.copy(currentPosition = position) }
+        // TODO: Seek ExoPlayer to position
     }
     
     private fun playNext() {
-        viewModelScope.launch {
-            // TODO: Implement next track logic
-            _sideEffect.send(PlayerSideEffect.ShowError("다음 트랙이 없습니다"))
-        }
+        // TODO: Implement next track logic
+        sendSideEffect(PlayerSideEffect.ShowError("다음 트랙이 없습니다"))
     }
     
     private fun playPrevious() {
-        viewModelScope.launch {
-            // TODO: Implement previous track logic
-            _sideEffect.send(PlayerSideEffect.ShowError("이전 트랙이 없습니다"))
-        }
+        // TODO: Implement previous track logic
+        sendSideEffect(PlayerSideEffect.ShowError("이전 트랙이 없습니다"))
     }
     
     private fun navigateBack() {
-        viewModelScope.launch {
-            _sideEffect.send(PlayerSideEffect.NavigateBack)
-        }
-    }
-    
-    override fun onCleared() {
-        super.onCleared()
-        // TODO: Release ExoPlayer resources
+        sendSideEffect(PlayerSideEffect.NavigateBack)
     }
 }
