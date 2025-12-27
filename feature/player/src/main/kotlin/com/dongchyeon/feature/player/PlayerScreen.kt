@@ -10,21 +10,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -69,138 +64,117 @@ fun PlayerRoute(
     PlayerScreen(
         uiState = uiState,
         onIntent = viewModel::handleIntent,
-        snackbarHostState = snackbarHostState
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
     uiState: PlayerUiState,
     onIntent: (PlayerIntent) -> Unit,
-    snackbarHostState: SnackbarHostState
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("재생 중") },
-                navigationIcon = {
-                    IconButton(onClick = { onIntent(PlayerIntent.NavigateBack) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "뒤로 가기"
-                        )
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(Spacing.large),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(Spacing.large),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            uiState.currentTrack?.let { track ->
-                // Track Info
-                Text(
-                    text = track.title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    textAlign = TextAlign.Center
+        uiState.currentTrack?.let { track ->
+            // Track Info
+            Text(
+                text = track.title,
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(Spacing.small))
+            Text(
+                text = track.artist,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.extraLarge))
+
+            // Progress Bar
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Slider(
+                    value = if (uiState.duration > 0) {
+                        uiState.currentPosition.toFloat() / uiState.duration.toFloat()
+                    } else 0f,
+                    onValueChange = { value ->
+                        val position = (value * uiState.duration).toLong()
+                        onIntent(PlayerIntent.SeekTo(position))
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(Spacing.small))
-                Text(
-                    text = track.artist,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-                
-                Spacer(modifier = Modifier.height(Spacing.extraLarge))
-                
-                // Progress Bar
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Slider(
-                        value = if (uiState.duration > 0) {
-                            uiState.currentPosition.toFloat() / uiState.duration.toFloat()
-                        } else 0f,
-                        onValueChange = { value ->
-                            val position = (value * uiState.duration).toLong()
-                            onIntent(PlayerIntent.SeekTo(position))
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = formatDuration(uiState.currentPosition),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = formatDuration(uiState.duration),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(Spacing.large))
-                
-                // Playback Controls
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(
-                        onClick = { onIntent(PlayerIntent.Previous) },
-                        modifier = Modifier.size(64.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SkipPrevious,
-                            contentDescription = "이전",
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = { onIntent(PlayerIntent.PlayPause) },
-                        modifier = Modifier.size(80.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (uiState.isPlaying) {
-                                Icons.Default.Pause
-                            } else {
-                                Icons.Default.PlayArrow
-                            },
-                            contentDescription = if (uiState.isPlaying) "일시정지" else "재생",
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = { onIntent(PlayerIntent.Next) },
-                        modifier = Modifier.size(64.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SkipNext,
-                            contentDescription = "다음",
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
+                    Text(
+                        text = formatDuration(uiState.currentPosition),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = formatDuration(uiState.duration),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
-            } ?: run {
-                Text(
-                    text = "재생할 트랙이 없습니다",
-                    style = MaterialTheme.typography.bodyLarge
-                )
             }
+
+            Spacer(modifier = Modifier.height(Spacing.large))
+
+            // Playback Controls
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { onIntent(PlayerIntent.Previous) },
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SkipPrevious,
+                        contentDescription = "이전",
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = { onIntent(PlayerIntent.PlayPause) },
+                    modifier = Modifier.size(80.dp)
+                ) {
+                    Icon(
+                        imageVector = if (uiState.isPlaying) {
+                            Icons.Default.Pause
+                        } else {
+                            Icons.Default.PlayArrow
+                        },
+                        contentDescription = if (uiState.isPlaying) "일시정지" else "재생",
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                IconButton(
+                    onClick = { onIntent(PlayerIntent.Next) },
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SkipNext,
+                        contentDescription = "다음",
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+            }
+        } ?: run {
+            Text(
+                text = "재생할 트랙이 없습니다",
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
