@@ -10,5 +10,5 @@ data class ArtworkDto(
     @SerialName("480x480")
     val medium: String? = null,
     @SerialName("1000x1000")
-    val large: String? = null
+    val large: String? = null,
 )

@@ -9,12 +9,18 @@ interface PlayerRepository {
     val currentTrack: Flow<Track?>
     val currentPosition: Flow<Long>
     val duration: Flow<Long>
-    
+
     fun playTrack(track: Track)
+
     fun play()
+
     fun pause()
+
     fun seekTo(position: Long)
+
     fun next()
+
     fun previous()
+
     fun release()
 }

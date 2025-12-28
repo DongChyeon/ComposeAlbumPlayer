@@ -13,27 +13,26 @@ import retrofit2.http.Query
  * API Documentation: https://docs.audius.org/developers/api/
  */
 interface AlbumApiService {
-
     @GET("v1/playlists/trending")
     suspend fun getTrendingPlaylists(
         @Query("type") type: String = "album",
         @Query("omit_tracks") omitTracks: Boolean = true,
         @Query("limit") limit: Int = 10,
-        @Query("offset") offset: Int = 0
+        @Query("offset") offset: Int = 0,
     ): PlaylistResponse
 
     @GET("v1/playlists/{playlist_id}")
     suspend fun getPlaylist(
-        @Path("playlist_id") playlistId: String
+        @Path("playlist_id") playlistId: String,
     ): AlbumResponse
 
     @GET("v1/playlists/{playlist_id}/tracks")
     suspend fun getPlaylistTracks(
-        @Path("playlist_id") playlistId: String
+        @Path("playlist_id") playlistId: String,
     ): TracksResponse
 
     @GET("v1/tracks/{track_id}")
     suspend fun getTrack(
-        @Path("track_id") trackId: String
+        @Path("track_id") trackId: String,
     ): TrackResponse
 }

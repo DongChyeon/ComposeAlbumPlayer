@@ -12,20 +12,19 @@ import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlbumPlayerApp(
-    modifier: Modifier = Modifier
-) {
+fun AlbumPlayerApp(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = AlbumPlayerTheme.colorScheme.background,
     ) { paddingValues ->
         NavGraph(
             navController = navController,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         )
     }
 }

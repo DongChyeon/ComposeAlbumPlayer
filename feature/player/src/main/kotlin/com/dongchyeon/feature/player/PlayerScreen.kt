@@ -39,17 +39,17 @@ import com.dongchyeon.domain.model.Track
 fun PlayerRoute(
     track: Track?,
     onNavigateBack: () -> Unit,
-    viewModel: PlayerViewModel = hiltViewModel()
+    viewModel: PlayerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     LaunchedEffect(track) {
         track?.let {
             viewModel.handleIntent(PlayerIntent.InitializePlayer(it))
         }
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { sideEffect ->
             when (sideEffect) {
@@ -62,7 +62,7 @@ fun PlayerRoute(
             }
         }
     }
-    
+
     PlayerScreen(
         uiState = uiState,
         onIntent = viewModel::handleIntent,
@@ -75,12 +75,13 @@ fun PlayerScreen(
     onIntent: (PlayerIntent) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Spacing.large),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(Spacing.large),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
         uiState.currentTrack?.let { track ->
             AlbumItem(
                 title = track.title,
@@ -97,14 +98,14 @@ fun PlayerScreen(
                 text = track.title,
                 style = AlbumPlayerTheme.typography.headlineMedium,
                 color = AlbumPlayerTheme.colorScheme.gray50,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(Spacing.small))
             Text(
                 text = track.artist,
                 style = AlbumPlayerTheme.typography.bodyLarge,
                 color = AlbumPlayerTheme.colorScheme.gray400,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(Spacing.extraLarge))
@@ -112,29 +113,32 @@ fun PlayerScreen(
             // Progress Bar
             Column(modifier = Modifier.fillMaxWidth()) {
                 Slider(
-                    value = if (uiState.duration > 0) {
-                        uiState.currentPosition.toFloat() / uiState.duration.toFloat()
-                    } else 0f,
+                    value =
+                        if (uiState.duration > 0) {
+                            uiState.currentPosition.toFloat() / uiState.duration.toFloat()
+                        } else {
+                            0f
+                        },
                     onValueChange = { value ->
                         val position = (value * uiState.duration).toLong()
                         onIntent(PlayerIntent.SeekTo(position))
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         text = formatDuration(uiState.currentPosition),
                         style = AlbumPlayerTheme.typography.bodySmall,
-                        color = AlbumPlayerTheme.colorScheme.gray400
+                        color = AlbumPlayerTheme.colorScheme.gray400,
                     )
                     Text(
                         text = formatDuration(uiState.duration),
                         style = AlbumPlayerTheme.typography.bodySmall,
-                        color = AlbumPlayerTheme.colorScheme.gray400
+                        color = AlbumPlayerTheme.colorScheme.gray400,
                     )
                 }
             }
@@ -145,43 +149,44 @@ fun PlayerScreen(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(
                     onClick = { onIntent(PlayerIntent.Previous) },
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(64.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.SkipPrevious,
                         contentDescription = "이전",
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(48.dp),
                     )
                 }
 
                 IconButton(
                     onClick = { onIntent(PlayerIntent.PlayPause) },
-                    modifier = Modifier.size(80.dp)
+                    modifier = Modifier.size(80.dp),
                 ) {
                     Icon(
-                        imageVector = if (uiState.isPlaying) {
-                            Icons.Default.Pause
-                        } else {
-                            Icons.Default.PlayArrow
-                        },
+                        imageVector =
+                            if (uiState.isPlaying) {
+                                Icons.Default.Pause
+                            } else {
+                                Icons.Default.PlayArrow
+                            },
                         contentDescription = if (uiState.isPlaying) "일시정지" else "재생",
                         modifier = Modifier.size(64.dp),
-                        tint = AlbumPlayerTheme.colorScheme.main1
+                        tint = AlbumPlayerTheme.colorScheme.main1,
                     )
                 }
 
                 IconButton(
                     onClick = { onIntent(PlayerIntent.Next) },
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(64.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.SkipNext,
                         contentDescription = "다음",
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(48.dp),
                     )
                 }
             }
@@ -189,7 +194,7 @@ fun PlayerScreen(
             Text(
                 text = "There is no track to play.",
                 style = AlbumPlayerTheme.typography.bodyLarge,
-                color = AlbumPlayerTheme.colorScheme.gray400
+                color = AlbumPlayerTheme.colorScheme.gray400,
             )
         }
     }
@@ -207,21 +212,26 @@ private fun formatDuration(milliseconds: Long): String {
 private fun PlayerScreenPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState = PlayerUiState(
-                currentTrack = Track(
-                    id = "track123",
-                    title = "Sample Track Title",
-                    artist = "Sample Artist",
-                    duration = 180000, // 3분
-                    streamUrl = "https://example.com/stream",
-                    artworkUrl = "https://example.com/artwork.jpg",
-                    albumId = "album123"
+            uiState =
+                PlayerUiState(
+                    currentTrack =
+                        Track(
+                            id = "track123",
+                            title = "Sample Track Title",
+                            artist = "Sample Artist",
+                            // 3분
+                            duration = 180000,
+                            streamUrl = "https://example.com/stream",
+                            artworkUrl = "https://example.com/artwork.jpg",
+                            albumId = "album123",
+                        ),
+                    isPlaying = true,
+                    // 1분
+                    currentPosition = 60000,
+                    // 3분
+                    duration = 180000,
                 ),
-                isPlaying = true,
-                currentPosition = 60000, // 1분
-                duration = 180000 // 3분
-            ),
-            onIntent = { }
+            onIntent = { },
         )
     }
 }
@@ -231,21 +241,24 @@ private fun PlayerScreenPreview() {
 private fun PlayerScreenPausedPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState = PlayerUiState(
-                currentTrack = Track(
-                    id = "track123",
-                    title = "Sample Track Title",
-                    artist = "Sample Artist",
+            uiState =
+                PlayerUiState(
+                    currentTrack =
+                        Track(
+                            id = "track123",
+                            title = "Sample Track Title",
+                            artist = "Sample Artist",
+                            duration = 180000,
+                            streamUrl = "https://example.com/stream",
+                            artworkUrl = "https://example.com/artwork.jpg",
+                            albumId = "album123",
+                        ),
+                    isPlaying = false,
+                    // 1분 30초
+                    currentPosition = 90000,
                     duration = 180000,
-                    streamUrl = "https://example.com/stream",
-                    artworkUrl = "https://example.com/artwork.jpg",
-                    albumId = "album123"
                 ),
-                isPlaying = false,
-                currentPosition = 90000, // 1분 30초
-                duration = 180000
-            ),
-            onIntent = { }
+            onIntent = { },
         )
     }
 }
@@ -255,10 +268,11 @@ private fun PlayerScreenPausedPreview() {
 private fun PlayerScreenEmptyPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState = PlayerUiState(
-                currentTrack = null
-            ),
-            onIntent = { }
+            uiState =
+                PlayerUiState(
+                    currentTrack = null,
+                ),
+            onIntent = { },
         )
     }
 }

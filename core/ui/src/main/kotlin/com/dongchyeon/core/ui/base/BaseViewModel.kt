@@ -12,18 +12,17 @@ import kotlinx.coroutines.launch
 
 /**
  * Base ViewModel for MVI Architecture
- * 
+ *
  * @param S UiState type
  * @param I Intent type
  * @param E SideEffect type
  */
 abstract class BaseViewModel<S, I, E>(
-    initialState: S
+    initialState: S,
 ) : ViewModel() {
-    
     private val _uiState = MutableStateFlow(initialState)
     val uiState: StateFlow<S> = _uiState.asStateFlow()
-    
+
     private val _sideEffect = Channel<E>()
     val sideEffect = _sideEffect.receiveAsFlow()
 

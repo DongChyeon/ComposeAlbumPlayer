@@ -17,16 +17,16 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
     private const val BASE_URL = "https://api.audius.co/"
 
     @Provides
     @Singleton
-    fun provideJson(): Json = Json {
-        ignoreUnknownKeys = true
-        coerceInputValues = true
-        isLenient = true
-    }
+    fun provideJson(): Json =
+        Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+            isLenient = true
+        }
 
     @Provides
     @Singleton
@@ -35,7 +35,7 @@ object NetworkModule {
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
                     level = HttpLoggingInterceptor.Level.BODY
-                }
+                },
             )
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -47,13 +47,13 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        json: Json
+        json: Json,
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(
-                json.asConverterFactory("application/json".toMediaType())
+                json.asConverterFactory("application/json".toMediaType()),
             )
             .build()
     }

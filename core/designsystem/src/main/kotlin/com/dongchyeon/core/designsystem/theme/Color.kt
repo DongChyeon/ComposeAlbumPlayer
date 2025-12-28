@@ -38,17 +38,13 @@ data class AlbumPlayerColorScheme(
     val main1: Color,
     val main2: Color,
     val main3: Color,
-    
     // Point Colors
     val point1: Color,
     val point2: Color,
-    
     // Semantic Colors
     val error: Color,
-    
     // Background Colors
     val background: Color,
-    
     // Gray Scale
     val gray50: Color,
     val gray100: Color,
@@ -64,24 +60,25 @@ data class AlbumPlayerColorScheme(
     val black: Color,
 )
 
-val DarkColorScheme = AlbumPlayerColorScheme(
-    main1 = Main1,
-    main2 = Main2,
-    main3 = Main3,
-    point1 = Point1,
-    point2 = Point2,
-    error = ErrorColor,
-    background = Background1,
-    gray50 = Gray50,
-    gray100 = Gray100,
-    gray200 = Gray200,
-    gray300 = Gray300,
-    gray400 = Gray400,
-    gray500 = Gray500,
-    gray600 = Gray600,
-    gray700 = Gray700,
-    gray800 = Gray800,
-    gray900 = Gray900,
-    gray950 = Gray950,
-    black = Black,
-)
+val DarkColorScheme =
+    AlbumPlayerColorScheme(
+        main1 = Main1,
+        main2 = Main2,
+        main3 = Main3,
+        point1 = Point1,
+        point2 = Point2,
+        error = ErrorColor,
+        background = Background1,
+        gray50 = Gray50,
+        gray100 = Gray100,
+        gray200 = Gray200,
+        gray300 = Gray300,
+        gray400 = Gray400,
+        gray500 = Gray500,
+        gray600 = Gray600,
+        gray700 = Gray700,
+        gray800 = Gray800,
+        gray900 = Gray900,
+        gray950 = Gray950,
+        black = Black,
+    )

@@ -6,13 +6,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PlaylistResponse(
     @SerialName("data")
-    val data: List<PlaylistDto>? = null
+    val data: List<PlaylistDto>? = null,
 )
 
 @Serializable
 data class AlbumResponse(
     @SerialName("data")
-    val data: List<PlaylistDto>? = null
+    val data: List<PlaylistDto>? = null,
 )
 
 @Serializable
@@ -34,7 +34,7 @@ data class PlaylistDto(
     @SerialName("track_count")
     val trackCount: Int? = null,
     @SerialName("tracks")
-    val tracks: List<TrackDto>? = null
+    val tracks: List<TrackDto>? = null,
 )
 
 @Serializable
@@ -44,5 +44,5 @@ data class PlaylistContentDto(
     @SerialName("timestamp")
     val timestamp: Long,
     @SerialName("metadata_timestamp")
-    val metadataTimestamp: Long
+    val metadataTimestamp: Long,
 )

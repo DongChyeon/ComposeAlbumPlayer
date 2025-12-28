@@ -16,26 +16,27 @@ import androidx.core.view.WindowCompat
 private val LocalAlbumPlayerColorScheme = staticCompositionLocalOf { DarkColorScheme }
 private val LocalAlbumPlayerTypography = staticCompositionLocalOf { AlbumPlayerTypography }
 
-private val MaterialDarkColorScheme = darkColorScheme(
-    primary = Main2,
-    onPrimary = Gray50,
-    primaryContainer = Main1,
-    onPrimaryContainer = Gray50,
-    background = Background1,
-    onBackground = Gray50,
-    surface = Gray950,
-    onSurface = Gray50,
-    error = ErrorColor,
-    onError = Gray50,
-)
+private val MaterialDarkColorScheme =
+    darkColorScheme(
+        primary = Main2,
+        onPrimary = Gray50,
+        primaryContainer = Main1,
+        onPrimaryContainer = Gray50,
+        background = Background1,
+        onBackground = Gray50,
+        surface = Gray950,
+        onSurface = Gray50,
+        error = ErrorColor,
+        onError = Gray50,
+    )
 
 @Composable
 fun AlbumPlayerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val view = LocalView.current
-    
+
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
@@ -46,12 +47,12 @@ fun AlbumPlayerTheme(
 
     CompositionLocalProvider(
         LocalAlbumPlayerColorScheme provides DarkColorScheme,
-        LocalAlbumPlayerTypography provides AlbumPlayerTypography
+        LocalAlbumPlayerTypography provides AlbumPlayerTypography,
     ) {
         MaterialTheme(
             colorScheme = MaterialDarkColorScheme,
             typography = AlbumPlayerTypography,
-            content = content
+            content = content,
         )
     }
 }
@@ -61,7 +62,7 @@ object AlbumPlayerTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalAlbumPlayerColorScheme.current
-    
+
     val typography: Typography
         @Composable
         @ReadOnlyComposable

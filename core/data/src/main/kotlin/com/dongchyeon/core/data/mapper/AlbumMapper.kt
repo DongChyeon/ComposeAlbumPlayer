@@ -10,7 +10,7 @@ fun PlaylistDto.toDomain(): Album {
         artist = user?.name ?: "Unknown Artist",
         artworkUrl = artwork?.small ?: artwork?.medium ?: artwork?.large ?: "",
         releaseDate = createdAt,
-        tracks = tracks?.toDomain(albumId = id) ?: emptyList()
+        tracks = tracks?.toDomain(albumId = id) ?: emptyList(),
     )
 }
 

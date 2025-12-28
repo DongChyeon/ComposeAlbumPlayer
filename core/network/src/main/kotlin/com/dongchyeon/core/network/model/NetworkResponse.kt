@@ -8,5 +8,5 @@ data class NetworkResponse<T>(
     @SerialName("data")
     val data: T? = null,
     @SerialName("error")
-    val error: String? = null
+    val error: String? = null,
 )

@@ -39,10 +39,10 @@ import com.dongchyeon.feature.home.component.RotaryWheelPicker
 @Composable
 fun HomeRoute(
     onNavigateToAlbum: (String) -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { sideEffect ->
             when (sideEffect) {
@@ -52,10 +52,10 @@ fun HomeRoute(
             }
         }
     }
-    
+
     HomeScreen(
         uiState = uiState,
-        onIntent = viewModel::handleIntent
+        onIntent = viewModel::handleIntent,
     )
 }
 
@@ -63,21 +63,24 @@ fun HomeRoute(
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
-    onIntent: (HomeIntent) -> Unit
+    onIntent: (HomeIntent) -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        AlbumPlayerTheme.colorScheme.main1.copy(alpha = 0.3f),
-                        AlbumPlayerTheme.colorScheme.background
-                    ),
-                    radius = 1000f
-                )
-            ),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(
+                    brush =
+                        Brush.radialGradient(
+                            colors =
+                                listOf(
+                                    AlbumPlayerTheme.colorScheme.main1.copy(alpha = 0.3f),
+                                    AlbumPlayerTheme.colorScheme.background,
+                                ),
+                            radius = 1000f,
+                        ),
+                ),
+        contentAlignment = Alignment.Center,
     ) {
         when {
             uiState.isLoading -> {
@@ -86,7 +89,7 @@ fun HomeScreen(
             uiState.error != null -> {
                 ErrorMessage(
                     message = uiState.error,
-                    onRetry = { onIntent(HomeIntent.Retry) }
+                    onRetry = { onIntent(HomeIntent.Retry) },
                 )
             }
             else -> {
@@ -103,16 +106,17 @@ fun HomeScreen(
                             if (uiState.showScrollHint) {
                                 onIntent(HomeIntent.DismissScrollHint)
                             }
-                        }
+                        },
                     )
-                    
+
                     // 스크롤 힌트 오버레이
                     AnimatedVisibility(
                         visible = uiState.showScrollHint,
                         enter = fadeIn(),
                         exit = fadeOut(),
-                        modifier = Modifier
-                            .align(Alignment.Center)
+                        modifier =
+                            Modifier
+                                .align(Alignment.Center),
                     ) {
                         ScrollHint()
                     }
@@ -127,39 +131,40 @@ fun ScrollHint() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .background(
-                color = AlbumPlayerTheme.colorScheme.background.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(16.dp)
-            )
-            .padding(horizontal = 32.dp, vertical = 24.dp)
+        modifier =
+            Modifier
+                .background(
+                    color = AlbumPlayerTheme.colorScheme.background.copy(alpha = 0.8f),
+                    shape = RoundedCornerShape(16.dp),
+                )
+                .padding(horizontal = 32.dp, vertical = 24.dp),
     ) {
         Icon(
             imageVector = Icons.Default.KeyboardArrowUp,
             contentDescription = null,
             tint = AlbumPlayerTheme.colorScheme.main2,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(40.dp),
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Scroll & Click",
             style = AlbumPlayerTheme.typography.titleMedium,
             color = AlbumPlayerTheme.colorScheme.gray50,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "to select Album",
             style = AlbumPlayerTheme.typography.bodySmall,
             color = AlbumPlayerTheme.colorScheme.gray400,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(8.dp))
         Icon(
             imageVector = Icons.Default.KeyboardArrowDown,
             contentDescription = null,
             tint = AlbumPlayerTheme.colorScheme.main2,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(40.dp),
         )
     }
 }
@@ -170,7 +175,7 @@ fun AlbumList(
     onAlbumClick: (Album) -> Unit,
     onLoadMore: () -> Unit,
     onScrollStarted: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (albums.isEmpty()) return
 
@@ -183,7 +188,7 @@ fun AlbumList(
                 artworkUrl = album.artworkUrl,
                 onClick = { onAlbumClick(album) },
                 isSelected = isSelected,
-                modifier = itemModifier.size(200.dp)
+                modifier = itemModifier.size(200.dp),
             )
         },
         onLoadMore = onLoadMore,

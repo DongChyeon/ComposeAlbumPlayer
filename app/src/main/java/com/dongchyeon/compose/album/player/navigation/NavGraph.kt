@@ -20,43 +20,44 @@ object TrackNavigationHolder {
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
-        modifier = modifier
+        modifier = modifier,
     ) {
         composable(route = Screen.Home.route) {
             HomeRoute(
                 onNavigateToAlbum = { albumId ->
                     navController.navigate(Screen.Album.createRoute(albumId))
-                }
+                },
             )
         }
-        
+
         composable(
             route = Screen.Album.route,
-            arguments = listOf(
-                navArgument("albumId") { type = NavType.StringType }
-            )
+            arguments =
+                listOf(
+                    navArgument("albumId") { type = NavType.StringType },
+                ),
         ) {
             AlbumRoute(
                 onNavigateBack = { navController.navigateUp() },
                 onNavigateToPlayer = { track ->
                     TrackNavigationHolder.currentTrack = track
                     navController.navigate(Screen.Player.route)
-                }
+                },
             )
         }
-        
+
         composable(route = Screen.Player.route) {
             PlayerRoute(
                 track = TrackNavigationHolder.currentTrack,
                 onNavigateBack = {
                     TrackNavigationHolder.currentTrack = null
                     navController.navigateUp()
-                }
+                },
             )
         }
     }
@@ -64,10 +65,10 @@ fun NavGraph(
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
-    
+
     data object Album : Screen("album/{albumId}") {
         fun createRoute(albumId: String) = "album/$albumId"
     }
-    
+
     data object Player : Screen("player")
 }

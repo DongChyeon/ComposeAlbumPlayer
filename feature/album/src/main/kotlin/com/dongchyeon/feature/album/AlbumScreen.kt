@@ -41,10 +41,10 @@ import com.dongchyeon.domain.model.Track
 fun AlbumRoute(
     onNavigateBack: () -> Unit,
     onNavigateToPlayer: (Track) -> Unit,
-    viewModel: AlbumViewModel = hiltViewModel()
+    viewModel: AlbumViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { sideEffect ->
             when (sideEffect) {
@@ -57,17 +57,17 @@ fun AlbumRoute(
             }
         }
     }
-    
+
     AlbumScreen(
         uiState = uiState,
-        onIntent = viewModel::handleIntent
+        onIntent = viewModel::handleIntent,
     )
 }
 
 @Composable
 fun AlbumScreen(
     uiState: AlbumUiState,
-    onIntent: (AlbumIntent) -> Unit
+    onIntent: (AlbumIntent) -> Unit,
 ) {
     when {
         uiState.isLoading -> {
@@ -76,7 +76,7 @@ fun AlbumScreen(
         uiState.error != null -> {
             ErrorMessage(
                 message = uiState.error,
-                onRetry = { onIntent(AlbumIntent.Retry) }
+                onRetry = { onIntent(AlbumIntent.Retry) },
             )
         }
         uiState.album != null -> {
@@ -87,7 +87,7 @@ fun AlbumScreen(
                 },
                 onNavigateBack = {
                     onIntent(AlbumIntent.NavigateBack)
-                }
+                },
             )
         }
     }
@@ -98,29 +98,30 @@ fun AlbumContent(
     album: Album,
     onTrackClick: (Track) -> Unit,
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) {
         // TopBar
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.small)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.small),
         ) {
             IconButton(
                 onClick = onNavigateBack,
-                modifier = Modifier.align(Alignment.CenterStart)
+                modifier = Modifier.align(Alignment.CenterStart),
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "뒤로 가기",
-                    tint = AlbumPlayerTheme.colorScheme.gray50
+                    tint = AlbumPlayerTheme.colorScheme.gray50,
                 )
             }
         }
-        
+
         // Content
         LazyColumn(
             modifier = Modifier.weight(1f),
@@ -128,7 +129,6 @@ fun AlbumContent(
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
             item {
                 AlbumItem(
                     title = album.title,
@@ -136,38 +136,40 @@ fun AlbumContent(
                     artworkUrl = album.artworkUrl,
                     onClick = { },
                     isSelected = false,
-                    modifier = Modifier
-                        .size(200.dp)
+                    modifier =
+                        Modifier
+                            .size(200.dp),
                 )
 
                 Text(
                     text = album.title,
                     style = AlbumPlayerTheme.typography.headlineSmall,
                     color = AlbumPlayerTheme.colorScheme.gray50,
-                    modifier = Modifier.padding(top = Spacing.medium)
+                    modifier = Modifier.padding(top = Spacing.medium),
                 )
 
                 Text(
                     text = album.artist,
                     style = AlbumPlayerTheme.typography.bodyMedium,
                     color = AlbumPlayerTheme.colorScheme.gray50,
-                    modifier = Modifier.padding(top = Spacing.small)
+                    modifier = Modifier.padding(top = Spacing.small),
                 )
 
                 Text(
                     text = "Track List",
                     style = AlbumPlayerTheme.typography.bodyLarge,
                     color = AlbumPlayerTheme.colorScheme.gray50,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = Spacing.medium)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.medium),
                 )
             }
 
             items(album.tracks) { track ->
                 TrackItem(
                     track = track,
-                    onClick = { onTrackClick(track) }
+                    onClick = { onTrackClick(track) },
                 )
             }
         }
@@ -178,46 +180,49 @@ fun AlbumContent(
 fun TrackItem(
     track: Track,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = Spacing.extraSmall)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = Spacing.extraSmall),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Spacing.medium),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = Icons.Default.PlayArrow,
                 contentDescription = "재생",
-                tint = AlbumPlayerTheme.colorScheme.main1
+                tint = AlbumPlayerTheme.colorScheme.main1,
             )
-            
+
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = Spacing.medium)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(start = Spacing.medium),
             ) {
                 Text(
                     text = track.title,
-                    style = AlbumPlayerTheme.typography.titleMedium
+                    style = AlbumPlayerTheme.typography.titleMedium,
                 )
                 Text(
                     text = track.artist,
                     style = AlbumPlayerTheme.typography.bodySmall,
-                    color = AlbumPlayerTheme.colorScheme.gray400
+                    color = AlbumPlayerTheme.colorScheme.gray400,
                 )
             }
-            
+
             Text(
                 text = formatDuration(track.duration),
                 style = AlbumPlayerTheme.typography.bodySmall,
-                color = AlbumPlayerTheme.colorScheme.gray400
+                color = AlbumPlayerTheme.colorScheme.gray400,
             )
         }
     }
@@ -235,43 +240,45 @@ private fun formatDuration(milliseconds: Long): String {
 private fun AlbumScreenPreview() {
     AlbumPlayerTheme {
         AlbumScreen(
-            uiState = AlbumUiState(
-                album = Album(
-                    id = "albumId",
-                    title = "Album Title",
-                    artist = "Artist Name",
-                    artworkUrl = "",
-                    releaseDate = null,
-                    tracks = listOf(
-                        Track(
-                            id = "trackId",
-                            title = "Track Title",
+            uiState =
+                AlbumUiState(
+                    album =
+                        Album(
+                            id = "albumId",
+                            title = "Album Title",
                             artist = "Artist Name",
-                            duration = 180000,
-                            streamUrl = "",
-                            artworkUrl = ""
+                            artworkUrl = "",
+                            releaseDate = null,
+                            tracks =
+                                listOf(
+                                    Track(
+                                        id = "trackId",
+                                        title = "Track Title",
+                                        artist = "Artist Name",
+                                        duration = 180000,
+                                        streamUrl = "",
+                                        artworkUrl = "",
+                                    ),
+                                    Track(
+                                        id = "trackId",
+                                        title = "Track Title",
+                                        artist = "Artist Name",
+                                        duration = 180000,
+                                        streamUrl = "",
+                                        artworkUrl = "",
+                                    ),
+                                    Track(
+                                        id = "trackId",
+                                        title = "Track Title",
+                                        artist = "Artist Name",
+                                        duration = 180000,
+                                        streamUrl = "",
+                                        artworkUrl = "",
+                                    ),
+                                ),
                         ),
-                        Track(
-                            id = "trackId",
-                            title = "Track Title",
-                            artist = "Artist Name",
-                            duration = 180000,
-                            streamUrl = "",
-                            artworkUrl = ""
-                        ),
-                        Track(
-                            id = "trackId",
-                            title = "Track Title",
-                            artist = "Artist Name",
-                            duration = 180000,
-                            streamUrl = "",
-                            artworkUrl = ""
-                        ),
-
-                    )
-                )
-            ),
-            onIntent = { }
+                ),
+            onIntent = { },
         )
     }
 }

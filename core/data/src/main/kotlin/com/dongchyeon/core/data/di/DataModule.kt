@@ -11,10 +11,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataModule {
-    
     @Binds
     @Singleton
-    abstract fun bindAlbumRepository(
-        albumRepositoryImpl: AlbumRepositoryImpl
-    ): AlbumRepository
+    abstract fun bindAlbumRepository(albumRepositoryImpl: AlbumRepositoryImpl): AlbumRepository
 }

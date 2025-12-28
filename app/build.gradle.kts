@@ -19,7 +19,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -38,12 +38,12 @@ dependencies {
     implementation(projects.feature.home)
     implementation(projects.feature.album)
     implementation(projects.feature.player)
-    
+
     // Android Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    
+
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -52,15 +52,15 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
-    
+
     // Navigation
     implementation(libs.androidx.navigation.compose)
-    
+
     // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

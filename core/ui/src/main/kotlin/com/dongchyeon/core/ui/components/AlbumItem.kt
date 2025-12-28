@@ -38,68 +38,76 @@ fun AlbumItem(
     artworkUrl: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isSelected: Boolean = false
+    isSelected: Boolean = false,
 ) {
-    val fallbackContent = remember(title, artist, isSelected) {
-        @Composable {
-            Column(
-                modifier = Modifier.padding(Spacing.medium)
-            ) {
-                Text(
-                    text = title,
-                    style = AlbumPlayerTheme.typography.titleLarge,
-                    color = if (isSelected)
-                        AlbumPlayerTheme.colorScheme.gray50
-                    else
-                        AlbumPlayerTheme.colorScheme.gray200
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = artist,
-                    style = AlbumPlayerTheme.typography.bodyMedium,
-                    color = if (isSelected)
-                        AlbumPlayerTheme.colorScheme.gray100
-                    else
-                        AlbumPlayerTheme.colorScheme.gray400
-                )
+    val fallbackContent =
+        remember(title, artist, isSelected) {
+            @Composable {
+                Column(
+                    modifier = Modifier.padding(Spacing.medium),
+                ) {
+                    Text(
+                        text = title,
+                        style = AlbumPlayerTheme.typography.titleLarge,
+                        color =
+                            if (isSelected) {
+                                AlbumPlayerTheme.colorScheme.gray50
+                            } else {
+                                AlbumPlayerTheme.colorScheme.gray200
+                            },
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = artist,
+                        style = AlbumPlayerTheme.typography.bodyMedium,
+                        color =
+                            if (isSelected) {
+                                AlbumPlayerTheme.colorScheme.gray100
+                            } else {
+                                AlbumPlayerTheme.colorScheme.gray400
+                            },
+                    )
+                }
             }
         }
-    }
-    
+
     Box(
-        modifier = modifier
-            .border(
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = Color.Gray
-                ),
-                shape = RoundedCornerShape(4.dp)
-            )
-            .clip(
-                shape = RoundedCornerShape(4.dp)
-            )
-            .clickable(onClick = onClick)
+        modifier =
+            modifier
+                .border(
+                    border =
+                        BorderStroke(
+                            width = 1.dp,
+                            color = Color.Gray,
+                        ),
+                    shape = RoundedCornerShape(4.dp),
+                )
+                .clip(
+                    shape = RoundedCornerShape(4.dp),
+                )
+                .clickable(onClick = onClick),
     ) {
         if (artworkUrl.isNotEmpty()) {
             SubcomposeAsyncImage(
                 model = artworkUrl,
                 contentDescription = title,
                 modifier = Modifier.fillMaxSize(),
-                error = { fallbackContent() }
+                error = { fallbackContent() },
             )
         } else {
             fallbackContent()
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    color = Color.White.copy(alpha = 0.2f)
-                )
-                .clip(
-                    shape = RoundedCornerShape(4.dp)
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = Color.White.copy(alpha = 0.2f),
+                    )
+                    .clip(
+                        shape = RoundedCornerShape(4.dp),
+                    ),
         )
     }
 }

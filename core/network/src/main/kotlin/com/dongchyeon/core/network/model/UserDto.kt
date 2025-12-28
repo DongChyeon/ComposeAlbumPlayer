@@ -10,5 +10,5 @@ data class UserDto(
     @SerialName("name")
     val name: String,
     @SerialName("handle")
-    val handle: String? = null
+    val handle: String? = null,
 )

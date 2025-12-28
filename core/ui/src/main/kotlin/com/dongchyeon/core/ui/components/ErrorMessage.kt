@@ -19,22 +19,23 @@ import com.dongchyeon.core.designsystem.theme.Spacing
 fun ErrorMessage(
     message: String,
     onRetry: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(Spacing.large),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(Spacing.large),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.error
+            color = MaterialTheme.colorScheme.error,
         )
-        
+
         if (onRetry != null) {
             Spacer(modifier = Modifier.height(Spacing.medium))
             Button(onClick = onRetry) {

@@ -5,7 +5,7 @@ import com.dongchyeon.domain.model.Album
 data class PaginationState(
     val currentPage: Int = 0,
     val isLoadingMore: Boolean = false,
-    val hasMoreData: Boolean = true
+    val hasMoreData: Boolean = true,
 ) {
     companion object {
         const val PAGE_SIZE = 10
@@ -17,14 +17,18 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val paginationState: PaginationState = PaginationState(),
-    val showScrollHint: Boolean = true
+    val showScrollHint: Boolean = true,
 )
 
 sealed interface HomeIntent {
     data object LoadAlbums : HomeIntent
+
     data object LoadMoreAlbums : HomeIntent
+
     data object Retry : HomeIntent
+
     data object DismissScrollHint : HomeIntent
+
     data class NavigateToAlbum(val albumId: String) : HomeIntent
 }
 

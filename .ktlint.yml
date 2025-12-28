@@ -1,3 +1,8 @@
+disabled_rules:
+  - standard:function-naming
+  - standard:no-wildcard-imports
+  - standard:import-ordering
+
 experimental:
   enabled: false
 

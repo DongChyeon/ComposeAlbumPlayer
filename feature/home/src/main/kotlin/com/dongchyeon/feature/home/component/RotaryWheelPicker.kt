@@ -62,7 +62,7 @@ fun <T> RotaryWheelPicker(
     val listState = rememberLazyListState()
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val density = LocalDensity.current
-    
+
     // 첫 번째 아이템의 높이를 측정
     var measuredItemHeight by remember { mutableStateOf(0.dp) }
 
@@ -81,12 +81,12 @@ fun <T> RotaryWheelPicker(
             }.index
         }
     }
-    
+
     // 선택된 인덱스가 변경되면 콜백 호출
     LaunchedEffect(selectedIndex) {
         onSelectedIndexChange(selectedIndex)
     }
-    
+
     // 스크롤 시작 감지
     LaunchedEffect(listState) {
         snapshotFlow { listState.isScrollInProgress }
@@ -96,7 +96,7 @@ fun <T> RotaryWheelPicker(
                 }
             }
     }
-    
+
     // 리스트의 끝에 도달했는지 확인하고 더 많은 데이터 로드
     LaunchedEffect(listState) {
         snapshotFlow {
@@ -110,44 +110,47 @@ fun <T> RotaryWheelPicker(
     }
 
     BoxWithConstraints(modifier) {
-        val padding = if (measuredItemHeight > 0.dp) {
-            ((maxHeight - measuredItemHeight) / 2).coerceAtLeast(0.dp)
-        } else {
-            maxHeight / 2
-        }
+        val padding =
+            if (measuredItemHeight > 0.dp) {
+                ((maxHeight - measuredItemHeight) / 2).coerceAtLeast(0.dp)
+            } else {
+                maxHeight / 2
+            }
 
         LazyColumn(
             state = listState,
             flingBehavior = flingBehavior,
             contentPadding = PaddingValues(vertical = padding),
             verticalArrangement = Arrangement.spacedBy(itemSpacing),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) {
             itemsIndexed(
                 items = items,
-                key = { index, _ -> index }
+                key = { index, _ -> index },
             ) { index, item ->
-                val transform = rememberArcTransform(
-                    state = listState,
-                    index = index,
-                    curvatureFactor = curvatureFactor,
-                    yArcBlend = yArcBlend
-                )
+                val transform =
+                    rememberArcTransform(
+                        state = listState,
+                        index = index,
+                        curvatureFactor = curvatureFactor,
+                        yArcBlend = yArcBlend,
+                    )
 
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .graphicsLayer {
-                            rotationZ = transform.rotationDeg
-                            translationX = transform.translationXPx
-                            translationY = transform.translationYPx
-                            alpha = transform.alpha
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .graphicsLayer {
+                                rotationZ = transform.rotationDeg
+                                translationX = transform.translationXPx
+                                translationY = transform.translationYPx
+                                alpha = transform.alpha
 
-                            // 왼쪽을 중심으로 회전(원하는 축이면 바꾸면 됨)
-                            transformOrigin = TransformOrigin(0f, 0.5f)
-                        },
-                    contentAlignment = Alignment.Center
+                                // 왼쪽을 중심으로 회전(원하는 축이면 바꾸면 됨)
+                                transformOrigin = TransformOrigin(0f, 0.5f)
+                            },
+                    contentAlignment = Alignment.Center,
                 ) {
                     itemContent(
                         item,
@@ -156,7 +159,7 @@ fun <T> RotaryWheelPicker(
                             if (index == 0 && measuredItemHeight == 0.dp) {
                                 measuredItemHeight = with(density) { size.height.toDp() }
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -191,8 +194,9 @@ private fun rememberArcTransform(
     return remember(state, index, curvatureFactor, yArcBlend) {
         derivedStateOf {
             val layout = state.layoutInfo
-            val info = layout.visibleItemsInfo.firstOrNull { it.index == index }
-                ?: return@derivedStateOf ArcTransform(0f, 0f, 0f, 0.4f)
+            val info =
+                layout.visibleItemsInfo.firstOrNull { it.index == index }
+                    ?: return@derivedStateOf ArcTransform(0f, 0f, 0f, 0.4f)
 
             val viewportStart = layout.viewportStartOffset.toFloat()
             val viewportEnd = layout.viewportEndOffset.toFloat()
@@ -228,10 +232,14 @@ private fun rememberArcTransform(
                 rotationDeg = rotationDeg,
                 translationXPx = translationX,
                 translationYPx = translationY,
-                alpha = alpha
+                alpha = alpha,
             )
         }
     }.value
 }
 
-private fun lerp(a: Float, b: Float, t: Float): Float = a + (b - a) * t
+private fun lerp(
+    a: Float,
+    b: Float,
+    t: Float,
+): Float = a + (b - a) * t
