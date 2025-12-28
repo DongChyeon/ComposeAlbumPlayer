@@ -1,0 +1,8 @@
+experimental:
+  enabled: false
+
+android: true
+
+reporters:
+  - plain
+  - checkstyle
