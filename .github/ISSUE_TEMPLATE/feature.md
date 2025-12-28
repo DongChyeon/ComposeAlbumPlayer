@@ -9,16 +9,16 @@ assignees: ''
 
 ## ✨ Feature
 
-**What to add?**
+**무엇을 추가하나요?**
 
-> e.g. Dark mode support for TimePicker.
+> 예: TimePicker에 다크 모드 지원 추가
 
-**Why?**
+**왜 필요한가요?**
 
-> e.g. Consistent UX with app theme.
+> 예: 앱 테마와 일관된 UX 제공을 위해
 
-### ✅ Checklist
+### ✅ 체크리스트
 
-- [ ] Feature implemented
-- [ ] Tests added
-- [ ] Docs updated
+- [ ] 기능 구현됨
+- [ ] 테스트 추가됨
+- [ ] 문서 업데이트됨

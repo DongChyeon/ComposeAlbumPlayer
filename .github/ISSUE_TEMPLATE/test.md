@@ -7,18 +7,18 @@ assignees: ''
 
 ---
 
-## 🧪 Test Task
+## 🧪 Test
 
-**What to test?**
+**무엇을 테스트하나요?**
 
-> e.g. Add unit tests for PickerState index management.
+> 예: PickerState 인덱스 관리를 위한 유닛 테스트 추가
 
-**Why?**
+**왜 필요한가요?**
 
-> e.g. Ensure correct selectedIndex and selectedItem behavior.
+> 예: selectedIndex와 selectedItem의 올바른 동작 보장을 위해
 
-### ✅ Checklist
+### ✅ 체크리스트
 
-- [ ] Covers main logic
-- [ ] Edge cases
-- [ ] Integration (if needed)
+- [ ] 주요 로직 커버
+- [ ] 엣지 케이스
+- [ ] 통합 테스트 (필요한 경우)

@@ -9,23 +9,23 @@ assignees: ''
 
 ## 🐞 Bug
 
-**What’s wrong?**
+**무엇이 잘못되었나요?**
 
-> e.g. Crash when selecting hour 23 in 24-hour mode.
+> 예: 24시간 모드에서 23시를 선택할 때 앱이 크래시됩니다.
 
-**Steps to reproduce:**
+**재현 방법:**
 
 1. …
 2. …
 3. …
 
-**Expected:**  
-e.g. No crash when scrolling to hour 23.
+**예상 동작:**
+예: 23시로 스크롤할 때 크래시가 발생하지 않아야 합니다.
 
-**Actual:**  
-e.g. App crashes with IndexOutOfBoundsException.
+**실제 동작:**
+예: IndexOutOfBoundsException과 함께 앱이 크래시됩니다.
 
-### ✅ Checklist
+### ✅ 체크리스트
 
-- [ ] Bug fixed
-- [ ] Test added (if needed)
+- [ ] 버그 수정됨
+- [ ] 테스트 추가됨 (필요한 경우)

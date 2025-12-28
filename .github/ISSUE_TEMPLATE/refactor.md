@@ -9,15 +9,15 @@ assignees: ''
 
 ## ♻️ Refactor
 
-**What to refactor?**
+**무엇을 리팩토링하나요?**
 
-> e.g. Replace mutable selectedItem with index-based state.
+> 예: mutable selectedItem을 index 기반 state로 교체
 
-**Why?**
+**왜 필요한가요?**
 
-> e.g. Enforce unidirectional data flow.
+> 예: 단방향 데이터 플로우 강제를 위해
 
-### ✅ Checklist
+### ✅ 체크리스트
 
-- [ ] Code updated
-- [ ] Tests pass
+- [ ] 코드 업데이트됨
+- [ ] 테스트 통과

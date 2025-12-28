@@ -1,34 +1,34 @@
-## 🎯 Related Issue
+## 🎯 관련 이슈
 
 - Closes #issue-number
 
 ---
 
-## 📝 Description
+## 📝 설명
 
-**What does this PR do?**
+**이 PR이 하는 일은?**
 
-> e.g. Refactor PickerState to use index-based StateFlow implementation.
-
----
-
-## ✅ Changes
-
-- [ ] Replace mutable selectedItem with derived getter.
-- [ ] Add selectedIndex StateFlow and update function.
-- [ ] Update rememberPickerState API.
-- [ ] Refactor usages in PickerItem and TimePicker.
+> 예: PickerState를 index 기반 StateFlow 구현으로 리팩토링
 
 ---
 
-## 🔍 Screenshots / Test Results (if applicable)
+## ✅ 변경 사항
 
-_Add any relevant screenshots or test output here._
+- [ ] mutable selectedItem을 derived getter로 교체
+- [ ] selectedIndex StateFlow 및 업데이트 함수 추가
+- [ ] rememberPickerState API 업데이트
+- [ ] PickerItem과 TimePicker 사용 부분 리팩토링
 
 ---
 
-## 👤 Reviewer Checklist
+## 🔍 스크린샷 / 테스트 결과 (해당되는 경우)
 
-- [ ] Code quality and style
-- [ ] Functionality works as expected
-- [ ] No breaking changes introduced
+_관련 스크린샷이나 테스트 결과를 여기에 추가하세요._
+
+---
+
+## 👤 리뷰어 체크리스트
+
+- [ ] 코드 품질 및 스타일
+- [ ] 기능이 예상대로 동작함
+- [ ] Breaking change 없음
