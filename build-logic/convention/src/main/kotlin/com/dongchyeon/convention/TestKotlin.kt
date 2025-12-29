@@ -9,5 +9,6 @@ import org.gradle.kotlin.dsl.dependencies
 internal fun Project.configureTestKotlin() {
     dependencies {
         add("testImplementation", libs.findLibrary("junit").get())
+        add("testImplementation", libs.findLibrary("kotlinx.coroutines.test").get())
     }
 }
