@@ -2,6 +2,9 @@ disabled_rules:
   - standard:function-naming
   - standard:no-wildcard-imports
   - standard:import-ordering
+  - standard:annotation
+  - standard:wrapping
+  - standard:parameter-list-wrapping
 
 experimental:
   enabled: false
