@@ -10,17 +10,13 @@ interface MusicPlayer {
     val currentPosition: Flow<Long>
     val duration: Flow<Long>
 
-    fun playTrack(track: Track)
+    suspend fun play(track: Track)
+    suspend fun pause()
+    suspend fun resume()
+    suspend fun seekTo(position: Long)
+    suspend fun skipToNext()
+    suspend fun skipToPrevious()
+    suspend fun stop()
 
-    fun play()
-
-    fun pause()
-
-    fun seekTo(position: Long)
-
-    fun next()
-
-    fun previous()
-
-    fun release()
+    suspend fun setPlaylist(tracks: List<Track>)
 }
