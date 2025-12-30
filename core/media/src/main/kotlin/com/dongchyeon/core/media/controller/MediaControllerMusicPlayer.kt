@@ -9,6 +9,7 @@ import androidx.media3.session.SessionToken
 import com.dongchyeon.core.media.service.MusicService
 import com.dongchyeon.domain.model.PlaybackState
 import com.dongchyeon.domain.model.RepeatMode
+import com.dongchyeon.domain.model.ShuffleMode
 import com.dongchyeon.domain.model.Track
 import com.dongchyeon.domain.player.MusicPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -47,6 +48,9 @@ class MediaControllerMusicPlayer @Inject constructor(
 
     private val _repeatMode = MutableStateFlow(RepeatMode.NONE)
     override val repeatMode: StateFlow<RepeatMode> = _repeatMode.asStateFlow()
+
+    private val _shuffleMode = MutableStateFlow(ShuffleMode.OFF)
+    override val shuffleMode: StateFlow<ShuffleMode> = _shuffleMode.asStateFlow()
 
     // 플레이리스트 정보 저장
     private var playlist: List<Track> = emptyList()
@@ -100,6 +104,10 @@ class MediaControllerMusicPlayer @Inject constructor(
                     Player.REPEAT_MODE_ALL -> RepeatMode.ALL
                     else -> RepeatMode.NONE
                 }
+            }
+
+            override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                _shuffleMode.value = if (shuffleModeEnabled) ShuffleMode.ON else ShuffleMode.OFF
             }
         })
     }
@@ -215,6 +223,11 @@ class MediaControllerMusicPlayer @Inject constructor(
             RepeatMode.ONE -> Player.REPEAT_MODE_ONE
             RepeatMode.ALL -> Player.REPEAT_MODE_ALL
         }
+    }
+
+    override fun setShuffleMode(enabled: Boolean) {
+        _shuffleMode.value = if (enabled) ShuffleMode.ON else ShuffleMode.OFF
+        mediaController?.shuffleModeEnabled = enabled
     }
 
     override fun release() {
