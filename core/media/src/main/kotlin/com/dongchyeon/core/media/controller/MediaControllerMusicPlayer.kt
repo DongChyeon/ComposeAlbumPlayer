@@ -130,7 +130,7 @@ class MediaControllerMusicPlayer @Inject constructor(
                         _currentPosition.value = controller.currentPosition
                     }
                 }
-                delay(250)
+                delay(100)
             }
         }
     }
