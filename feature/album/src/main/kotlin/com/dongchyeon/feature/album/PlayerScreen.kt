@@ -25,6 +25,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -142,37 +143,14 @@ private fun PlayerContent(
 
         Spacer(modifier = Modifier.height(Spacing.extraLarge))
 
-        // Progress Bar
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Slider(
-                value = if (uiState.duration > 0) {
-                    uiState.currentPosition.toFloat() / uiState.duration.toFloat()
-                } else {
-                    0f
-                },
-                onValueChange = { value ->
-                    val position = (value * uiState.duration).toLong()
-                    onIntent(AlbumPlayerIntent.SeekTo(position))
-                },
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(
-                    text = formatDuration(uiState.currentPosition),
-                    style = AlbumPlayerTheme.typography.bodySmall,
-                    color = AlbumPlayerTheme.colorScheme.gray400,
-                )
-                Text(
-                    text = formatDuration(uiState.duration),
-                    style = AlbumPlayerTheme.typography.bodySmall,
-                    color = AlbumPlayerTheme.colorScheme.gray400,
-                )
-            }
-        }
+        ProgressBar(
+            currentPositionSeconds = uiState.currentPositionSeconds,
+            durationSeconds = uiState.durationSeconds,
+            durationMs = uiState.duration,
+            onSeek = { position ->
+                onIntent(AlbumPlayerIntent.SeekTo(position))
+            },
+        )
 
         Spacer(modifier = Modifier.height(Spacing.large))
 
@@ -262,6 +240,51 @@ private fun PlayerContent(
     }
 }
 
+@Composable
+private fun ProgressBar(
+    currentPositionSeconds: Int,
+    durationSeconds: Int,
+    durationMs: Long,
+    onSeek: (Long) -> Unit,
+) {
+    // progress 계산
+    val progress = if (durationSeconds > 0) {
+        currentPositionSeconds.toFloat() / durationSeconds.toFloat()
+    } else {
+        0f
+    }
+
+    val onValueChange = remember(durationMs, onSeek) {
+        { value: Float ->
+            onSeek((value * durationMs).toLong())
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Slider(
+            value = progress,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = formatDuration(currentPositionSeconds * 1000L),
+                style = AlbumPlayerTheme.typography.bodySmall,
+                color = AlbumPlayerTheme.colorScheme.gray400,
+            )
+            Text(
+                text = formatDuration(durationSeconds * 1000L),
+                style = AlbumPlayerTheme.typography.bodySmall,
+                color = AlbumPlayerTheme.colorScheme.gray400,
+            )
+        }
+    }
+}
+
 private fun formatDuration(milliseconds: Long): String {
     val totalSeconds = milliseconds / 1000
     val minutes = totalSeconds / 60
@@ -287,6 +310,8 @@ private fun PlayerScreenPreview() {
                 isPlaying = true,
                 currentPosition = 60000,
                 duration = 180000,
+                currentPositionSeconds = 60,
+                durationSeconds = 180,
             ),
             onIntent = { },
         )
@@ -311,6 +336,8 @@ private fun PlayerScreenPausedPreview() {
                 isPlaying = false,
                 currentPosition = 90000,
                 duration = 180000,
+                currentPositionSeconds = 90,
+                durationSeconds = 180,
             ),
             onIntent = { },
         )

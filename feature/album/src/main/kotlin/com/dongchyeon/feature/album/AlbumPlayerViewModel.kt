@@ -123,14 +123,24 @@ class AlbumPlayerViewModel @Inject constructor(
         // CurrentPosition 관찰
         musicPlayer.currentPosition
             .onEach { position ->
-                updateState { it.copy(currentPosition = position) }
+                updateState {
+                    it.copy(
+                        currentPosition = position,
+                        currentPositionSeconds = (position / 1000).toInt(),
+                    )
+                }
             }
             .launchIn(viewModelScope)
 
         // Duration 관찰
         musicPlayer.duration
             .onEach { duration ->
-                updateState { it.copy(duration = duration) }
+                updateState {
+                    it.copy(
+                        duration = duration,
+                        durationSeconds = (duration / 1000).toInt(),
+                    )
+                }
             }
             .launchIn(viewModelScope)
 
