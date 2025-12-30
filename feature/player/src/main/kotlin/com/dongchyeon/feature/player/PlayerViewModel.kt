@@ -3,9 +3,9 @@ package com.dongchyeon.feature.player
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.dongchyeon.core.media.controller.MediaControllerManager
 import com.dongchyeon.core.ui.base.BaseViewModel
 import com.dongchyeon.domain.model.PlaybackState
-import com.dongchyeon.domain.player.MusicPlayer
 import com.dongchyeon.domain.repository.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -16,10 +16,10 @@ import javax.inject.Inject
 class PlayerViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val albumRepository: AlbumRepository,
-    private val musicPlayer: MusicPlayer,
+    private val mediaControllerManager: MediaControllerManager,
 ) : BaseViewModel<PlayerUiState, PlayerIntent, PlayerSideEffect>(
     initialState = PlayerUiState(
-        isLoading = (savedStateHandle.get<String>("trackId") ?: "").isNotEmpty()
+        isLoading = (savedStateHandle.get<String>("trackId") ?: "").isNotEmpty(),
     ),
 ) {
     private val trackId: String = savedStateHandle["trackId"] ?: ""
@@ -28,12 +28,12 @@ class PlayerViewModel @Inject constructor(
         if (trackId.isNotEmpty()) {
             loadTrack()
         }
-        observeMusicPlayer()
+        observeMediaController()
     }
 
-    private fun observeMusicPlayer() {
+    private fun observeMediaController() {
         // PlaybackState 관찰
-        musicPlayer.playbackState
+        mediaControllerManager.playbackState
             .onEach { playbackState ->
                 updateState {
                     it.copy(
@@ -45,21 +45,21 @@ class PlayerViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         // CurrentPosition 관찰
-        musicPlayer.currentPosition
+        mediaControllerManager.currentPosition
             .onEach { position ->
                 updateState { it.copy(currentPosition = position) }
             }
             .launchIn(viewModelScope)
 
         // Duration 관찰
-        musicPlayer.duration
+        mediaControllerManager.duration
             .onEach { duration ->
                 updateState { it.copy(duration = duration) }
             }
             .launchIn(viewModelScope)
 
         // CurrentTrack 관찰
-        musicPlayer.currentTrack
+        mediaControllerManager.currentTrack
             .onEach { track ->
                 track?.let {
                     updateState { state -> state.copy(currentTrack = track) }
@@ -83,7 +83,7 @@ class PlayerViewModel @Inject constructor(
                         )
                     }
                     // 트랙 로드 성공 시 자동으로 재생
-                    musicPlayer.play(track)
+                    mediaControllerManager.play(track)
                     Log.d("PlayerViewModel", "트랙 로드 성공: $track")
                 }
                 .onFailure { exception ->
@@ -108,30 +108,26 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun togglePlayPause() {
-        launchInScope {
-            if (currentState.isPlaying) {
-                musicPlayer.pause()
-            } else {
-                musicPlayer.resume()
-            }
+        if (currentState.isPlaying) {
+            mediaControllerManager.pause()
+        } else {
+            mediaControllerManager.resume()
         }
     }
 
     private fun seekTo(position: Long) {
-        launchInScope {
-            musicPlayer.seekTo(position)
-        }
+        mediaControllerManager.seekTo(position)
     }
 
     private fun playNext() {
         launchInScope {
-            musicPlayer.skipToNext()
+            mediaControllerManager.skipToNext()
         }
     }
 
     private fun playPrevious() {
         launchInScope {
-            musicPlayer.skipToPrevious()
+            mediaControllerManager.skipToPrevious()
         }
     }
 

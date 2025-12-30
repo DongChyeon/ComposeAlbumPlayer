@@ -18,6 +18,7 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.guava)
 
     // Media3 ExoPlayer
     implementation(libs.androidx.media3.exoplayer)

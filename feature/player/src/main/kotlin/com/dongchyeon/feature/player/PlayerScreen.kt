@@ -39,7 +39,7 @@ import com.dongchyeon.domain.model.Track
 @Composable
 fun PlayerRoute(
     onNavigateBack: () -> Unit,
-    viewModel: PlayerViewModel = hiltViewModel()
+    viewModel: PlayerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -66,7 +66,7 @@ fun PlayerRoute(
 @Composable
 fun PlayerScreen(
     uiState: PlayerUiState,
-    onIntent: (PlayerIntent) -> Unit
+    onIntent: (PlayerIntent) -> Unit,
 ) {
     when {
         uiState.isLoading -> {
