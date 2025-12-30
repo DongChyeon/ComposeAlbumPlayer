@@ -235,42 +235,41 @@ private fun formatDuration(milliseconds: Long): String {
 private fun AlbumScreenPreview() {
     AlbumPlayerTheme {
         AlbumScreen(
-            uiState =
-                AlbumUiState(
-                    album = Album(
-                        id = "albumId",
-                        title = "Album Title",
-                        artist = "Artist Name",
-                        artworkUrl = "",
-                        releaseDate = null,
-                        tracks = listOf(
-                            Track(
-                                id = "trackId",
-                                title = "Track Title",
-                                artist = "Artist Name",
-                                duration = 180000,
-                                streamUrl = "",
-                                artworkUrl = "",
-                            ),
-                            Track(
-                                id = "trackId",
-                                title = "Track Title",
-                                artist = "Artist Name",
-                                duration = 180000,
-                                streamUrl = "",
-                                artworkUrl = "",
-                            ),
-                            Track(
-                                id = "trackId",
-                                title = "Track Title",
-                                artist = "Artist Name",
-                                duration = 180000,
-                                streamUrl = "",
-                                artworkUrl = "",
-                            ),
+            uiState = AlbumUiState(
+                album = Album(
+                    id = "albumId",
+                    title = "Album Title",
+                    artist = "Artist Name",
+                    artworkUrl = "",
+                    releaseDate = null,
+                    tracks = listOf(
+                        Track(
+                            id = "trackId",
+                            title = "Track Title",
+                            artist = "Artist Name",
+                            duration = 180000,
+                            streamUrl = "",
+                            artworkUrl = "",
+                        ),
+                        Track(
+                            id = "trackId",
+                            title = "Track Title",
+                            artist = "Artist Name",
+                            duration = 180000,
+                            streamUrl = "",
+                            artworkUrl = "",
+                        ),
+                        Track(
+                            id = "trackId",
+                            title = "Track Title",
+                            artist = "Artist Name",
+                            duration = 180000,
+                            streamUrl = "",
+                            artworkUrl = "",
                         ),
                     ),
                 ),
+            ),
             onIntent = { },
         )
     }

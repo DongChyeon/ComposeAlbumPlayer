@@ -12,7 +12,7 @@ class AlbumRepositoryImpl @Inject constructor(
 ) : AlbumRepository {
     override suspend fun getAlbums(
         page: Int,
-        limit: Int
+        limit: Int,
     ): Result<List<Album>> {
         return try {
             val offset = page * limit

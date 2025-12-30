@@ -69,15 +69,13 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                brush =
-                    Brush.radialGradient(
-                        colors =
-                            listOf(
-                                AlbumPlayerTheme.colorScheme.main1.copy(alpha = 0.3f),
-                                AlbumPlayerTheme.colorScheme.background,
-                            ),
-                        radius = 1000f,
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        AlbumPlayerTheme.colorScheme.main1.copy(alpha = 0.3f),
+                        AlbumPlayerTheme.colorScheme.background,
                     ),
+                    radius = 1000f,
+                ),
             ),
         contentAlignment = Alignment.Center,
     ) {

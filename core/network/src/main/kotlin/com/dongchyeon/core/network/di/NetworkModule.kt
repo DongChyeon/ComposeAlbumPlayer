@@ -46,7 +46,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        json: Json
+        json: Json,
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
