@@ -65,7 +65,6 @@ fun AlbumScreen(
         uiState.album != null -> {
             AlbumContent(
                 album = uiState.album,
-                currentTrack = uiState.currentTrack,
                 onTrackClick = { track ->
                     onIntent(AlbumPlayerIntent.NavigateToPlayer(track))
                 },
@@ -80,7 +79,6 @@ fun AlbumScreen(
 @Composable
 fun AlbumContent(
     album: Album,
-    currentTrack: Track?,
     onTrackClick: (Track) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
