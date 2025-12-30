@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -90,20 +91,31 @@ fun HomeScreen(
                 )
             }
             else -> {
+                // 람다 최적화: remember로 감싸서 불필요한 리컴포지션 방지
+                val onAlbumClick = remember(onIntent) {
+                    { album: Album ->
+                        onIntent(HomeIntent.NavigateToAlbum(album.id))
+                    }
+                }
+                val onLoadMore = remember(onIntent) {
+                    {
+                        onIntent(HomeIntent.LoadMoreAlbums)
+                    }
+                }
+                val onScrollStarted = remember(onIntent, uiState.showScrollHint) {
+                    {
+                        if (uiState.showScrollHint) {
+                            onIntent(HomeIntent.DismissScrollHint)
+                        }
+                    }
+                }
+
                 Box(modifier = Modifier.fillMaxSize()) {
                     AlbumList(
                         albums = uiState.albums,
-                        onAlbumClick = { album ->
-                            onIntent(HomeIntent.NavigateToAlbum(album.id))
-                        },
-                        onLoadMore = {
-                            onIntent(HomeIntent.LoadMoreAlbums)
-                        },
-                        onScrollStarted = {
-                            if (uiState.showScrollHint) {
-                                onIntent(HomeIntent.DismissScrollHint)
-                            }
-                        },
+                        onAlbumClick = onAlbumClick,
+                        onLoadMore = onLoadMore,
+                        onScrollStarted = onScrollStarted,
                     )
 
                     // 스크롤 힌트 오버레이
@@ -176,7 +188,7 @@ fun AlbumList(
     if (albums.isEmpty()) return
 
     RotaryWheelPicker(
-        items = albums,
+        albums = albums,
         itemContent = { album, isSelected, itemModifier ->
             AlbumItem(
                 title = album.title,
