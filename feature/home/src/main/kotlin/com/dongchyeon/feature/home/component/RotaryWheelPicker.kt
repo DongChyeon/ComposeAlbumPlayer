@@ -31,26 +31,30 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.dongchyeon.domain.model.Album
+import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * 반원 형태로 회전하는 Rotary Wheel Picker
+ * 반원 형태로 회전하는 앨범 선택기 (Rotary Wheel Picker)
  *
- * @param items 표시할 아이템 리스트
- * @param itemContent 각 아이템을 렌더링하는 컴포저블
- * @param onSelectedIndexChange 선택된 인덱스가 변경될 때 호출되는 콜백
+ * @param albums 표시할 앨범 리스트
+ * @param itemContent 각 앨범을 렌더링하는 컴포저블 (album, isSelected, modifier)
  * @param modifier Modifier
- * @param maxRotateDeg 최대 회전 각도 (도)
- * @param maxTranslateXPx 최대 수평 이동 거리 (px)
- * @param horizontalPadding 좌우 패딩
+ * @param onSelectedIndexChange 선택된 인덱스가 변경될 때 호출되는 콜백
+ * @param onLoadMore 더 많은 데이터를 로드할 때 호출되는 콜백
+ * @param onScrollStarted 스크롤 시작 시 호출되는 콜백
+ * @param itemSpacing 아이템 간격
+ * @param curvatureFactor 원호 휨 정도
+ * @param yArcBlend 세로 원호 블렌딩
  */
 @Composable
-fun <T> RotaryWheelPicker(
-    items: List<T>,
-    itemContent: @Composable (item: T, isSelected: Boolean, modifier: Modifier) -> Unit,
+fun RotaryWheelPicker(
+    albums: List<Album>,
+    itemContent: @Composable (album: Album, isSelected: Boolean, modifier: Modifier) -> Unit,
     modifier: Modifier = Modifier,
     onSelectedIndexChange: (Int) -> Unit = {},
     onLoadMore: () -> Unit = {},
@@ -87,24 +91,27 @@ fun <T> RotaryWheelPicker(
         onSelectedIndexChange(selectedIndex)
     }
 
-    // 스크롤 시작 감지
+    // 스크롤 관련 이벤트 통합 처리
     LaunchedEffect(listState) {
-        snapshotFlow { listState.isScrollInProgress }
-            .collect { isScrolling ->
-                if (isScrolling) {
-                    onScrollStarted()
+        // 스크롤 시작 감지
+        launch {
+            snapshotFlow { listState.isScrollInProgress }
+                .collect { isScrolling ->
+                    if (isScrolling) {
+                        onScrollStarted()
+                    }
                 }
-            }
-    }
+        }
 
-    // 리스트의 끝에 도달했는지 확인하고 더 많은 데이터 로드
-    LaunchedEffect(listState) {
-        snapshotFlow {
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem?.index
-        }.collect { lastVisibleIndex ->
-            if (lastVisibleIndex != null && lastVisibleIndex >= items.size - 5) {
-                onLoadMore()
+        // 리스트의 끝에 도달했는지 확인하고 더 많은 데이터 로드
+        launch {
+            snapshotFlow {
+                val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+                lastVisibleItem?.index
+            }.collect { lastVisibleIndex ->
+                if (lastVisibleIndex != null && lastVisibleIndex >= albums.size - 5) {
+                    onLoadMore()
+                }
             }
         }
     }
@@ -125,9 +132,9 @@ fun <T> RotaryWheelPicker(
             modifier = Modifier.fillMaxSize(),
         ) {
             itemsIndexed(
-                items = items,
-                key = { index, _ -> index },
-            ) { index, item ->
+                items = albums,
+                key = { _, album -> album.id },
+            ) { index, album ->
                 val transform =
                     rememberArcTransform(
                         state = listState,
@@ -152,7 +159,7 @@ fun <T> RotaryWheelPicker(
                     contentAlignment = Alignment.Center,
                 ) {
                     itemContent(
-                        item,
+                        album,
                         index == selectedIndex,
                         Modifier.onSizeChanged { size ->
                             if (index == 0 && measuredItemHeight == 0.dp) {
@@ -182,6 +189,7 @@ private data class ArcTransform(
  * - θ = asin(y/R)
  * - rotationZ = θ(deg)
  * - x = -R * (1 - cosθ)
+ *
  */
 @Composable
 private fun rememberArcTransform(
@@ -190,7 +198,7 @@ private fun rememberArcTransform(
     curvatureFactor: Float,
     yArcBlend: Float,
 ): ArcTransform {
-    return remember(state, index, curvatureFactor, yArcBlend) {
+    return remember(index, curvatureFactor, yArcBlend) {
         derivedStateOf {
             val layout = state.layoutInfo
             val info =

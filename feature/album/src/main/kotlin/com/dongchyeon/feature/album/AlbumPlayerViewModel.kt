@@ -11,8 +11,12 @@ import com.dongchyeon.domain.player.MusicPlayer
 import com.dongchyeon.domain.repository.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,6 +30,15 @@ class AlbumPlayerViewModel @Inject constructor(
 ) {
 
     private val albumId: String = savedStateHandle["albumId"] ?: ""
+
+    // 실시간으로 변경되는 값들은 별도 Flow로 노출
+    val currentPositionSeconds: StateFlow<Int> = musicPlayer.currentPosition
+        .map { (it / 1000).toInt() }
+        .stateIn(viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = 0)
+
+    val durationSeconds: StateFlow<Int> = musicPlayer.duration
+        .map { (it / 1000).toInt() }
+        .stateIn(viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = 0)
 
     init {
         loadAlbumData()
@@ -117,20 +130,6 @@ class AlbumPlayerViewModel @Inject constructor(
         musicPlayer.currentTrack
             .onEach { track ->
                 updateState { it.copy(currentTrack = track) }
-            }
-            .launchIn(viewModelScope)
-
-        // CurrentPosition 관찰
-        musicPlayer.currentPosition
-            .onEach { position ->
-                updateState { it.copy(currentPosition = position) }
-            }
-            .launchIn(viewModelScope)
-
-        // Duration 관찰
-        musicPlayer.duration
-            .onEach { duration ->
-                updateState { it.copy(duration = duration) }
             }
             .launchIn(viewModelScope)
 
