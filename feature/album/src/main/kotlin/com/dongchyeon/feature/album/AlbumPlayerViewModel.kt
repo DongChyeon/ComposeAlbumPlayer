@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.dongchyeon.core.ui.base.BaseViewModel
 import com.dongchyeon.domain.model.PlaybackState
+import com.dongchyeon.domain.model.RepeatMode
+import com.dongchyeon.domain.model.ShuffleMode
 import com.dongchyeon.domain.model.Track
 import com.dongchyeon.domain.player.MusicPlayer
 import com.dongchyeon.domain.repository.AlbumRepository
@@ -42,6 +44,10 @@ class AlbumPlayerViewModel @Inject constructor(
             is AlbumPlayerIntent.SkipToNext -> skipToNext()
             is AlbumPlayerIntent.SkipToPrevious -> skipToPrevious()
 
+            // 재생 모드
+            is AlbumPlayerIntent.ToggleRepeatMode -> toggleRepeatMode()
+            is AlbumPlayerIntent.ToggleShuffle -> toggleShuffle()
+
             // 네비게이션
             is AlbumPlayerIntent.NavigateBack -> sendSideEffect(AlbumPlayerSideEffect.NavigateBack)
             is AlbumPlayerIntent.NavigateToPlayer -> {
@@ -51,9 +57,6 @@ class AlbumPlayerViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 앨범 정보와 트랙 리스트 로드
-     */
     private fun loadAlbumData() {
         launchInScope {
             updateState { it.copy(isLoading = true, error = null) }
@@ -97,9 +100,6 @@ class AlbumPlayerViewModel @Inject constructor(
         }
     }
 
-    /**
-     * MusicPlayer 상태 관찰
-     */
     private fun observeMediaController() {
         // PlaybackState 관찰
         musicPlayer.playbackState
@@ -133,11 +133,22 @@ class AlbumPlayerViewModel @Inject constructor(
                 updateState { it.copy(duration = duration) }
             }
             .launchIn(viewModelScope)
+
+        // RepeatMode 관찰
+        musicPlayer.repeatMode
+            .onEach { mode ->
+                updateState { it.copy(repeatMode = mode) }
+            }
+            .launchIn(viewModelScope)
+
+        // ShuffleMode 관찰
+        musicPlayer.shuffleMode
+            .onEach { mode ->
+                updateState { it.copy(shuffleMode = mode) }
+            }
+            .launchIn(viewModelScope)
     }
 
-    /**
-     * 트랙 재생
-     */
     private fun playTrack(track: Track) {
         viewModelScope.launch {
             val tracksList = currentState.album?.tracks ?: emptyList()
@@ -172,5 +183,19 @@ class AlbumPlayerViewModel @Inject constructor(
         viewModelScope.launch {
             musicPlayer.skipToPrevious()
         }
+    }
+
+    private fun toggleRepeatMode() {
+        val nextMode = when (currentState.repeatMode) {
+            RepeatMode.NONE -> RepeatMode.ALL
+            RepeatMode.ALL -> RepeatMode.ONE
+            RepeatMode.ONE -> RepeatMode.NONE
+        }
+        musicPlayer.setRepeatMode(nextMode)
+    }
+
+    private fun toggleShuffle() {
+        val isCurrentlyOn = currentState.shuffleMode == ShuffleMode.ON
+        musicPlayer.setShuffleMode(!isCurrentlyOn)
     }
 }

@@ -118,9 +118,7 @@ fun AlbumContent(
                     artworkUrl = album.artworkUrl,
                     onClick = { },
                     isSelected = false,
-                    modifier =
-                    Modifier
-                        .size(200.dp),
+                    modifier = Modifier.size(200.dp),
                 )
 
                 Text(
