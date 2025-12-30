@@ -1,15 +1,23 @@
 disabled_rules:
-  - standard:function-naming
   - standard:no-wildcard-imports
   - standard:import-ordering
-  - standard:annotation
-  - standard:wrapping
-  - standard:parameter-list-wrapping
+  - standard:backing-property-naming
+  - standard:binary-expression-wrapping
+  - standard:chain-method-continuation
+  - standard:class-signature
+  - standard:condition-wrapping
+  - standard:function-expression-body
+  - standard:function-literal
+  - standard:function-type-modifier-spacing
+  - standard:multiline-loop
+  - standard:function-signature
 
 experimental:
   enabled: false
 
 android: true
+
+ktlint_code_style: android_studio
 
 reporters:
   - plain
