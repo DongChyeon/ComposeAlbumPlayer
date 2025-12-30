@@ -30,14 +30,15 @@ android {
 }
 
 dependencies {
-    // Modules
-    implementation(projects.domain)
-    implementation(projects.core.data)
-    implementation(projects.core.designsystem)
-    implementation(projects.core.ui)
+    // Feature Modules (Navigation)
     implementation(projects.feature.home)
     implementation(projects.feature.album)
-    implementation(projects.feature.player)
+
+    // Core Modules
+    implementation(projects.core.designsystem)
+
+    implementation(projects.core.data)
+    implementation(projects.core.media)
 
     // Android Core
     implementation(libs.androidx.core.ktx)

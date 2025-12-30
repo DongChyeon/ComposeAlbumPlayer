@@ -26,10 +26,9 @@ rootProject.name = "ComposeAlbumPlayer"
 include(":app")
 include(":domain")
 include(":core:data")
+include(":core:media")
 include(":core:network")
 include(":core:ui")
 include(":core:designsystem")
 include(":feature:home")
 include(":feature:album")
-include(":feature:player")
- 

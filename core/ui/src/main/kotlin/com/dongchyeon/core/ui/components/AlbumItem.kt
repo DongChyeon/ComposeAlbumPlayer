@@ -49,23 +49,21 @@ fun AlbumItem(
                     Text(
                         text = title,
                         style = AlbumPlayerTheme.typography.titleLarge,
-                        color =
-                            if (isSelected) {
-                                AlbumPlayerTheme.colorScheme.gray50
-                            } else {
-                                AlbumPlayerTheme.colorScheme.gray200
-                            },
+                        color = if (isSelected) {
+                            AlbumPlayerTheme.colorScheme.gray50
+                        } else {
+                            AlbumPlayerTheme.colorScheme.gray200
+                        },
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = artist,
                         style = AlbumPlayerTheme.typography.bodyMedium,
-                        color =
-                            if (isSelected) {
-                                AlbumPlayerTheme.colorScheme.gray100
-                            } else {
-                                AlbumPlayerTheme.colorScheme.gray400
-                            },
+                        color = if (isSelected) {
+                            AlbumPlayerTheme.colorScheme.gray100
+                        } else {
+                            AlbumPlayerTheme.colorScheme.gray400
+                        },
                     )
                 }
             }
@@ -73,19 +71,18 @@ fun AlbumItem(
 
     Box(
         modifier =
-            modifier
-                .border(
-                    border =
-                        BorderStroke(
-                            width = 1.dp,
-                            color = Color.Gray,
-                        ),
-                    shape = RoundedCornerShape(4.dp),
-                )
-                .clip(
-                    shape = RoundedCornerShape(4.dp),
-                )
-                .clickable(onClick = onClick),
+        modifier
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = Color.Gray,
+                ),
+                shape = RoundedCornerShape(4.dp),
+            )
+            .clip(
+                shape = RoundedCornerShape(4.dp),
+            )
+            .clickable(onClick = onClick),
     ) {
         if (artworkUrl.isNotEmpty()) {
             SubcomposeAsyncImage(
@@ -99,15 +96,14 @@ fun AlbumItem(
         }
 
         Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        color = Color.White.copy(alpha = 0.2f),
-                    )
-                    .clip(
-                        shape = RoundedCornerShape(4.dp),
-                    ),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    color = Color.White.copy(alpha = 0.2f),
+                )
+                .clip(
+                    shape = RoundedCornerShape(4.dp),
+                ),
         )
     }
 }

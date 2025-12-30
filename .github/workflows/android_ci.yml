@@ -51,3 +51,32 @@ jobs:
       # Run Lint and Build
       - name: Run lint and build
         run: ./gradlew ktlintCheck assembleDebug
+
+      # Install Graphviz (for dependency graph generation)
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      # Generate Project Dependency Graph
+      - name: Generate project dependency graph
+        run: ./gradlew projectDependencyGraph
+        continue-on-error: true
+
+      # Commit and Push Dependency Graph (only on main branch)
+      - name: Commit dependency graph
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add project.dot.png || true
+          git diff --staged --quiet || git commit -m "chore: Update dependency graph [skip ci]"
+          git push || true
+        continue-on-error: true
+
+      # Upload Dependency Graph as Artifact (for PRs)
+      - name: Upload dependency graph
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-graph
+          path: project.dot.png
+          retention-days: 30
