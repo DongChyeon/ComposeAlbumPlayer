@@ -1,5 +1,6 @@
 package com.dongchyeon.feature.album
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -123,6 +124,7 @@ private fun PlayerContent(
             style = AlbumPlayerTheme.typography.headlineMedium,
             color = AlbumPlayerTheme.colorScheme.gray50,
             textAlign = TextAlign.Center,
+            modifier = Modifier.basicMarquee(),
         )
         Spacer(modifier = Modifier.height(Spacing.small))
         Text(
