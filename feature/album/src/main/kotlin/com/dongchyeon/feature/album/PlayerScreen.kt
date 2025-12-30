@@ -39,6 +39,8 @@ import com.dongchyeon.core.ui.components.LoadingIndicator
 import com.dongchyeon.domain.model.RepeatMode
 import com.dongchyeon.domain.model.ShuffleMode
 import com.dongchyeon.domain.model.Track
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun PlayerRoute(
@@ -48,6 +50,8 @@ fun PlayerRoute(
 
     PlayerScreen(
         uiState = uiState,
+        currentPositionSeconds = viewModel.currentPositionSeconds,
+        durationSeconds = viewModel.durationSeconds,
         onIntent = viewModel::handleIntent,
     )
 }
@@ -55,6 +59,8 @@ fun PlayerRoute(
 @Composable
 fun PlayerScreen(
     uiState: AlbumPlayerUiState,
+    currentPositionSeconds: StateFlow<Int>,
+    durationSeconds: StateFlow<Int>,
     onIntent: (AlbumPlayerIntent) -> Unit,
 ) {
     when {
@@ -80,6 +86,8 @@ fun PlayerScreen(
         uiState.currentTrack != null -> {
             PlayerContent(
                 uiState = uiState,
+                currentPositionSeconds = currentPositionSeconds,
+                durationSeconds = durationSeconds,
                 onIntent = onIntent,
             )
         }
@@ -104,6 +112,8 @@ fun PlayerScreen(
 @Composable
 private fun PlayerContent(
     uiState: AlbumPlayerUiState,
+    currentPositionSeconds: StateFlow<Int>,
+    durationSeconds: StateFlow<Int>,
     onIntent: (AlbumPlayerIntent) -> Unit,
 ) {
     val track = uiState.currentTrack ?: return
@@ -144,9 +154,8 @@ private fun PlayerContent(
         Spacer(modifier = Modifier.height(Spacing.extraLarge))
 
         ProgressBar(
-            currentPositionSeconds = uiState.currentPositionSeconds,
-            durationSeconds = uiState.durationSeconds,
-            durationMs = uiState.duration,
+            currentPositionSeconds = currentPositionSeconds,
+            durationSeconds = durationSeconds,
             onSeek = { position ->
                 onIntent(AlbumPlayerIntent.SeekTo(position))
             },
@@ -242,21 +251,24 @@ private fun PlayerContent(
 
 @Composable
 private fun ProgressBar(
-    currentPositionSeconds: Int,
-    durationSeconds: Int,
-    durationMs: Long,
+    currentPositionSeconds: StateFlow<Int>,
+    durationSeconds: StateFlow<Int>,
     onSeek: (Long) -> Unit,
 ) {
+    // 실시간으로 변경되는 값만 여기서 구독
+    val currentPos by currentPositionSeconds.collectAsStateWithLifecycle()
+    val duration by durationSeconds.collectAsStateWithLifecycle()
+
     // progress 계산
-    val progress = if (durationSeconds > 0) {
-        currentPositionSeconds.toFloat() / durationSeconds.toFloat()
+    val progress = if (duration > 0) {
+        currentPos.toFloat() / duration.toFloat()
     } else {
         0f
     }
 
-    val onValueChange = remember(durationMs, onSeek) {
+    val onValueChange = remember(duration, onSeek) {
         { value: Float ->
-            onSeek((value * durationMs).toLong())
+            onSeek((value * duration * 1000L).toLong())
         }
     }
 
@@ -272,12 +284,12 @@ private fun ProgressBar(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = formatDuration(currentPositionSeconds * 1000L),
+                text = formatDuration(currentPos * 1000L),
                 style = AlbumPlayerTheme.typography.bodySmall,
                 color = AlbumPlayerTheme.colorScheme.gray400,
             )
             Text(
-                text = formatDuration(durationSeconds * 1000L),
+                text = formatDuration(duration * 1000L),
                 style = AlbumPlayerTheme.typography.bodySmall,
                 color = AlbumPlayerTheme.colorScheme.gray400,
             )
@@ -308,11 +320,9 @@ private fun PlayerScreenPreview() {
                     albumId = "album123",
                 ),
                 isPlaying = true,
-                currentPosition = 60000,
-                duration = 180000,
-                currentPositionSeconds = 60,
-                durationSeconds = 180,
             ),
+            currentPositionSeconds = MutableStateFlow(60),
+            durationSeconds = MutableStateFlow(180),
             onIntent = { },
         )
     }
@@ -334,11 +344,9 @@ private fun PlayerScreenPausedPreview() {
                     albumId = "album123",
                 ),
                 isPlaying = false,
-                currentPosition = 90000,
-                duration = 180000,
-                currentPositionSeconds = 90,
-                durationSeconds = 180,
             ),
+            currentPositionSeconds = MutableStateFlow(90),
+            durationSeconds = MutableStateFlow(180),
             onIntent = { },
         )
     }
@@ -352,6 +360,8 @@ private fun PlayerScreenEmptyPreview() {
             uiState = AlbumPlayerUiState(
                 currentTrack = null,
             ),
+            currentPositionSeconds = MutableStateFlow(0),
+            durationSeconds = MutableStateFlow(0),
             onIntent = { },
         )
     }

@@ -16,10 +16,6 @@ data class AlbumPlayerUiState(
     val currentTrack: Track? = null,
     val playbackState: PlaybackState = PlaybackState.Idle,
     val isPlaying: Boolean = false,
-    val currentPosition: Long = 0L,
-    val duration: Long = 0L,
-    val currentPositionSeconds: Int = 0,
-    val durationSeconds: Int = 0,
 
     // 재생 모드
     val repeatMode: RepeatMode = RepeatMode.NONE,
