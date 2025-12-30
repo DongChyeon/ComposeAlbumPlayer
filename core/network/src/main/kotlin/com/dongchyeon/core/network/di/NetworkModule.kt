@@ -21,12 +21,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideJson(): Json =
-        Json {
-            ignoreUnknownKeys = true
-            coerceInputValues = true
-            isLenient = true
-        }
+    fun provideJson(): Json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+        isLenient = true
+    }
 
     @Provides
     @Singleton
@@ -47,7 +46,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        json: Json,
+        json: Json
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)

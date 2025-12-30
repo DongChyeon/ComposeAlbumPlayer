@@ -22,10 +22,9 @@ fun ErrorMessage(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .padding(Spacing.large),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(Spacing.large),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

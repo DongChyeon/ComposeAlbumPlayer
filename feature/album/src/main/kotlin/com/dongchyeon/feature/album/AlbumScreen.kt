@@ -105,10 +105,9 @@ fun AlbumContent(
     ) {
         // TopBar
         Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(Spacing.small),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.small),
         ) {
             IconButton(
                 onClick = onNavigateBack,
@@ -137,8 +136,8 @@ fun AlbumContent(
                     onClick = { },
                     isSelected = false,
                     modifier =
-                        Modifier
-                            .size(200.dp),
+                    Modifier
+                        .size(200.dp),
                 )
 
                 Text(
@@ -159,10 +158,9 @@ fun AlbumContent(
                     text = "Track List",
                     style = AlbumPlayerTheme.typography.bodyLarge,
                     color = AlbumPlayerTheme.colorScheme.gray50,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(top = Spacing.medium),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = Spacing.medium),
                 )
             }
 
@@ -183,17 +181,15 @@ fun TrackItem(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = Spacing.extraSmall),
     ) {
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(Spacing.medium),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -203,10 +199,9 @@ fun TrackItem(
             )
 
             Column(
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .padding(start = Spacing.medium),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = Spacing.medium),
             ) {
                 Text(
                     text = track.title,
@@ -242,41 +237,39 @@ private fun AlbumScreenPreview() {
         AlbumScreen(
             uiState =
                 AlbumUiState(
-                    album =
-                        Album(
-                            id = "albumId",
-                            title = "Album Title",
-                            artist = "Artist Name",
-                            artworkUrl = "",
-                            releaseDate = null,
-                            tracks =
-                                listOf(
-                                    Track(
-                                        id = "trackId",
-                                        title = "Track Title",
-                                        artist = "Artist Name",
-                                        duration = 180000,
-                                        streamUrl = "",
-                                        artworkUrl = "",
-                                    ),
-                                    Track(
-                                        id = "trackId",
-                                        title = "Track Title",
-                                        artist = "Artist Name",
-                                        duration = 180000,
-                                        streamUrl = "",
-                                        artworkUrl = "",
-                                    ),
-                                    Track(
-                                        id = "trackId",
-                                        title = "Track Title",
-                                        artist = "Artist Name",
-                                        duration = 180000,
-                                        streamUrl = "",
-                                        artworkUrl = "",
-                                    ),
-                                ),
+                    album = Album(
+                        id = "albumId",
+                        title = "Album Title",
+                        artist = "Artist Name",
+                        artworkUrl = "",
+                        releaseDate = null,
+                        tracks = listOf(
+                            Track(
+                                id = "trackId",
+                                title = "Track Title",
+                                artist = "Artist Name",
+                                duration = 180000,
+                                streamUrl = "",
+                                artworkUrl = "",
+                            ),
+                            Track(
+                                id = "trackId",
+                                title = "Track Title",
+                                artist = "Artist Name",
+                                duration = 180000,
+                                streamUrl = "",
+                                artworkUrl = "",
+                            ),
+                            Track(
+                                id = "trackId",
+                                title = "Track Title",
+                                artist = "Artist Name",
+                                duration = 180000,
+                                streamUrl = "",
+                                artworkUrl = "",
+                            ),
                         ),
+                    ),
                 ),
             onIntent = { },
         )

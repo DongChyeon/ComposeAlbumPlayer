@@ -66,20 +66,19 @@ fun HomeScreen(
     onIntent: (HomeIntent) -> Unit,
 ) {
     Box(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(
-                    brush =
-                        Brush.radialGradient(
-                            colors =
-                                listOf(
-                                    AlbumPlayerTheme.colorScheme.main1.copy(alpha = 0.3f),
-                                    AlbumPlayerTheme.colorScheme.background,
-                                ),
-                            radius = 1000f,
-                        ),
-                ),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush =
+                    Brush.radialGradient(
+                        colors =
+                            listOf(
+                                AlbumPlayerTheme.colorScheme.main1.copy(alpha = 0.3f),
+                                AlbumPlayerTheme.colorScheme.background,
+                            ),
+                        radius = 1000f,
+                    ),
+            ),
         contentAlignment = Alignment.Center,
     ) {
         when {
@@ -115,8 +114,8 @@ fun HomeScreen(
                         enter = fadeIn(),
                         exit = fadeOut(),
                         modifier =
-                            Modifier
-                                .align(Alignment.Center),
+                        Modifier
+                            .align(Alignment.Center),
                     ) {
                         ScrollHint()
                     }
@@ -131,13 +130,12 @@ fun ScrollHint() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier =
-            Modifier
-                .background(
-                    color = AlbumPlayerTheme.colorScheme.background.copy(alpha = 0.8f),
-                    shape = RoundedCornerShape(16.dp),
-                )
-                .padding(horizontal = 32.dp, vertical = 24.dp),
+        modifier = Modifier
+            .background(
+                color = AlbumPlayerTheme.colorScheme.background.copy(alpha = 0.8f),
+                shape = RoundedCornerShape(16.dp),
+            )
+            .padding(horizontal = 32.dp, vertical = 24.dp),
     ) {
         Icon(
             imageVector = Icons.Default.KeyboardArrowUp,

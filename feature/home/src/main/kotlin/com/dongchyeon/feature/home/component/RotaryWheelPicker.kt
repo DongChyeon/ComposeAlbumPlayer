@@ -137,19 +137,18 @@ fun <T> RotaryWheelPicker(
                     )
 
                 Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .graphicsLayer {
-                                rotationZ = transform.rotationDeg
-                                translationX = transform.translationXPx
-                                translationY = transform.translationYPx
-                                alpha = transform.alpha
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .graphicsLayer {
+                            rotationZ = transform.rotationDeg
+                            translationX = transform.translationXPx
+                            translationY = transform.translationYPx
+                            alpha = transform.alpha
 
-                                // 왼쪽을 중심으로 회전(원하는 축이면 바꾸면 됨)
-                                transformOrigin = TransformOrigin(0f, 0.5f)
-                            },
+                            // 왼쪽을 중심으로 회전(원하는 축이면 바꾸면 됨)
+                            transformOrigin = TransformOrigin(0f, 0.5f)
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     itemContent(
@@ -238,8 +237,4 @@ private fun rememberArcTransform(
     }.value
 }
 
-private fun lerp(
-    a: Float,
-    b: Float,
-    t: Float,
-): Float = a + (b - a) * t
+private fun lerp(a: Float, b: Float, t: Float): Float = a + (b - a) * t

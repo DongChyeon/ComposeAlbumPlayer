@@ -21,10 +21,9 @@ fun AlbumPlayerApp(modifier: Modifier = Modifier) {
     ) { paddingValues ->
         NavGraph(
             navController = navController,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
         )
     }
 }
