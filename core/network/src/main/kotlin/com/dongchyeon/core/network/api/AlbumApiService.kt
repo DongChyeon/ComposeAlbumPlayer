@@ -26,7 +26,7 @@ interface AlbumApiService {
         @Path("playlist_id") playlistId: String,
     ): AlbumResponse
 
-    @GET("v1/playlists/{playlist_id}/tracks")
+    @GET("v1/full/playlists/{playlist_id}/tracks")
     suspend fun getPlaylistTracks(
         @Path("playlist_id") playlistId: String,
     ): TracksResponse
