@@ -1,4 +1,4 @@
-package com.dongchyeon.feature.player
+package com.dongchyeon.feature.album
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,18 +17,14 @@ import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 import com.dongchyeon.core.designsystem.theme.Spacing
@@ -38,24 +34,9 @@ import com.dongchyeon.domain.model.Track
 
 @Composable
 fun PlayerRoute(
-    onNavigateBack: () -> Unit,
-    viewModel: PlayerViewModel = hiltViewModel(),
+    viewModel: AlbumPlayerViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(Unit) {
-        viewModel.sideEffect.collect { sideEffect ->
-            when (sideEffect) {
-                is PlayerSideEffect.NavigateBack -> {
-                    onNavigateBack()
-                }
-                is PlayerSideEffect.ShowError -> {
-                    snackbarHostState.showSnackbar(sideEffect.message)
-                }
-            }
-        }
-    }
 
     PlayerScreen(
         uiState = uiState,
@@ -65,8 +46,8 @@ fun PlayerRoute(
 
 @Composable
 fun PlayerScreen(
-    uiState: PlayerUiState,
-    onIntent: (PlayerIntent) -> Unit,
+    uiState: AlbumPlayerUiState,
+    onIntent: (AlbumPlayerIntent) -> Unit,
 ) {
     when {
         uiState.isLoading -> {
@@ -103,7 +84,7 @@ fun PlayerScreen(
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "There is no track to play.",
+                    text = "재생할 트랙이 없습니다.",
                     style = AlbumPlayerTheme.typography.bodyLarge,
                     color = AlbumPlayerTheme.colorScheme.gray400,
                 )
@@ -114,8 +95,8 @@ fun PlayerScreen(
 
 @Composable
 private fun PlayerContent(
-    uiState: PlayerUiState,
-    onIntent: (PlayerIntent) -> Unit,
+    uiState: AlbumPlayerUiState,
+    onIntent: (AlbumPlayerIntent) -> Unit,
 ) {
     val track = uiState.currentTrack ?: return
 
@@ -163,7 +144,7 @@ private fun PlayerContent(
                 },
                 onValueChange = { value ->
                     val position = (value * uiState.duration).toLong()
-                    onIntent(PlayerIntent.SeekTo(position))
+                    onIntent(AlbumPlayerIntent.SeekTo(position))
                 },
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -194,7 +175,7 @@ private fun PlayerContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
-                onClick = { onIntent(PlayerIntent.Previous) },
+                onClick = { onIntent(AlbumPlayerIntent.SkipToPrevious) },
                 modifier = Modifier.size(64.dp),
             ) {
                 Icon(
@@ -205,7 +186,7 @@ private fun PlayerContent(
             }
 
             IconButton(
-                onClick = { onIntent(PlayerIntent.PlayPause) },
+                onClick = { onIntent(AlbumPlayerIntent.TogglePlayPause) },
                 modifier = Modifier.size(80.dp),
             ) {
                 Icon(
@@ -221,7 +202,7 @@ private fun PlayerContent(
             }
 
             IconButton(
-                onClick = { onIntent(PlayerIntent.Next) },
+                onClick = { onIntent(AlbumPlayerIntent.SkipToNext) },
                 modifier = Modifier.size(64.dp),
             ) {
                 Icon(
@@ -246,21 +227,18 @@ private fun formatDuration(milliseconds: Long): String {
 private fun PlayerScreenPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState = PlayerUiState(
+            uiState = AlbumPlayerUiState(
                 currentTrack = Track(
                     id = "track123",
                     title = "Sample Track Title",
                     artist = "Sample Artist",
-                    // 3분
                     duration = 180000,
                     streamUrl = "https://example.com/stream",
                     artworkUrl = "https://example.com/artwork.jpg",
                     albumId = "album123",
                 ),
                 isPlaying = true,
-                // 1분
                 currentPosition = 60000,
-                // 3분
                 duration = 180000,
             ),
             onIntent = { },
@@ -273,7 +251,7 @@ private fun PlayerScreenPreview() {
 private fun PlayerScreenPausedPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState = PlayerUiState(
+            uiState = AlbumPlayerUiState(
                 currentTrack = Track(
                     id = "track123",
                     title = "Sample Track Title",
@@ -284,7 +262,6 @@ private fun PlayerScreenPausedPreview() {
                     albumId = "album123",
                 ),
                 isPlaying = false,
-                // 1분 30초
                 currentPosition = 90000,
                 duration = 180000,
             ),
@@ -298,7 +275,7 @@ private fun PlayerScreenPausedPreview() {
 private fun PlayerScreenEmptyPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState = PlayerUiState(
+            uiState = AlbumPlayerUiState(
                 currentTrack = null,
             ),
             onIntent = { },

@@ -38,7 +38,6 @@ dependencies {
     implementation(projects.core.ui)
     implementation(projects.feature.home)
     implementation(projects.feature.album)
-    implementation(projects.feature.player)
 
     // Android Core
     implementation(libs.androidx.core.ktx)

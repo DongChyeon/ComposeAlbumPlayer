@@ -21,13 +21,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 import com.dongchyeon.core.designsystem.theme.Spacing
@@ -39,24 +37,9 @@ import com.dongchyeon.domain.model.Track
 
 @Composable
 fun AlbumRoute(
-    onNavigateBack: () -> Unit,
-    onNavigateToPlayer: (Track) -> Unit,
-    viewModel: AlbumViewModel = hiltViewModel(),
+    viewModel: AlbumPlayerViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        viewModel.sideEffect.collect { sideEffect ->
-            when (sideEffect) {
-                is AlbumSideEffect.NavigateToPlayer -> {
-                    onNavigateToPlayer(sideEffect.track)
-                }
-                is AlbumSideEffect.NavigateBack -> {
-                    onNavigateBack()
-                }
-            }
-        }
-    }
 
     AlbumScreen(
         uiState = uiState,
@@ -66,8 +49,8 @@ fun AlbumRoute(
 
 @Composable
 fun AlbumScreen(
-    uiState: AlbumUiState,
-    onIntent: (AlbumIntent) -> Unit,
+    uiState: AlbumPlayerUiState,
+    onIntent: (AlbumPlayerIntent) -> Unit,
 ) {
     when {
         uiState.isLoading -> {
@@ -76,17 +59,18 @@ fun AlbumScreen(
         uiState.error != null -> {
             ErrorMessage(
                 message = uiState.error,
-                onRetry = { onIntent(AlbumIntent.Retry) },
+                onRetry = { onIntent(AlbumPlayerIntent.Retry) },
             )
         }
         uiState.album != null -> {
             AlbumContent(
                 album = uiState.album,
+                currentTrack = uiState.currentTrack,
                 onTrackClick = { track ->
-                    onIntent(AlbumIntent.PlayTrack(track))
+                    onIntent(AlbumPlayerIntent.NavigateToPlayer(track))
                 },
                 onNavigateBack = {
-                    onIntent(AlbumIntent.NavigateBack)
+                    onIntent(AlbumPlayerIntent.NavigateBack)
                 },
             )
         }
@@ -96,6 +80,7 @@ fun AlbumScreen(
 @Composable
 fun AlbumContent(
     album: Album,
+    currentTrack: Track?,
     onTrackClick: (Track) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -235,7 +220,7 @@ private fun formatDuration(milliseconds: Long): String {
 private fun AlbumScreenPreview() {
     AlbumPlayerTheme {
         AlbumScreen(
-            uiState = AlbumUiState(
+            uiState = AlbumPlayerUiState(
                 album = Album(
                     id = "albumId",
                     title = "Album Title",
@@ -250,22 +235,25 @@ private fun AlbumScreenPreview() {
                             duration = 180000,
                             streamUrl = "",
                             artworkUrl = "",
+                            albumId = "albumId",
                         ),
                         Track(
-                            id = "trackId",
-                            title = "Track Title",
+                            id = "trackId2",
+                            title = "Track Title 2",
                             artist = "Artist Name",
                             duration = 180000,
                             streamUrl = "",
                             artworkUrl = "",
+                            albumId = "albumId",
                         ),
                         Track(
-                            id = "trackId",
-                            title = "Track Title",
+                            id = "trackId3",
+                            title = "Track Title 3",
                             artist = "Artist Name",
                             duration = 180000,
                             streamUrl = "",
                             artworkUrl = "",
+                            albumId = "albumId",
                         ),
                     ),
                 ),
