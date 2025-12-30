@@ -33,22 +33,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 import com.dongchyeon.core.designsystem.theme.Spacing
 import com.dongchyeon.core.ui.components.AlbumItem
+import com.dongchyeon.core.ui.components.LoadingIndicator
 import com.dongchyeon.domain.model.Track
 
 @Composable
 fun PlayerRoute(
-    track: Track?,
     onNavigateBack: () -> Unit,
-    viewModel: PlayerViewModel = hiltViewModel(),
+    viewModel: PlayerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(track) {
-        track?.let {
-            viewModel.handleIntent(PlayerIntent.InitializePlayer(it))
-        }
-    }
 
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { sideEffect ->
@@ -72,130 +66,170 @@ fun PlayerRoute(
 @Composable
 fun PlayerScreen(
     uiState: PlayerUiState,
+    onIntent: (PlayerIntent) -> Unit
+) {
+    when {
+        uiState.isLoading -> {
+            LoadingIndicator()
+        }
+        uiState.error != null -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.large),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = uiState.error,
+                    style = AlbumPlayerTheme.typography.bodyLarge,
+                    color = AlbumPlayerTheme.colorScheme.gray400,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+        uiState.currentTrack != null -> {
+            PlayerContent(
+                uiState = uiState,
+                onIntent = onIntent,
+            )
+        }
+        else -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.large),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = "There is no track to play.",
+                    style = AlbumPlayerTheme.typography.bodyLarge,
+                    color = AlbumPlayerTheme.colorScheme.gray400,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlayerContent(
+    uiState: PlayerUiState,
     onIntent: (PlayerIntent) -> Unit,
 ) {
+    val track = uiState.currentTrack ?: return
+
     Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(Spacing.large),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(Spacing.large),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        uiState.currentTrack?.let { track ->
-            AlbumItem(
-                title = track.title,
-                artist = track.artist,
-                artworkUrl = track.artworkUrl,
-                onClick = { },
-                isSelected = false,
-                modifier = Modifier.size(300.dp),
+        AlbumItem(
+            title = track.title,
+            artist = track.artist,
+            artworkUrl = track.artworkUrl,
+            onClick = { },
+            isSelected = false,
+            modifier = Modifier.size(300.dp),
+        )
+        Spacer(modifier = Modifier.height(Spacing.medium))
+
+        // Track Info
+        Text(
+            text = track.title,
+            style = AlbumPlayerTheme.typography.headlineMedium,
+            color = AlbumPlayerTheme.colorScheme.gray50,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(Spacing.small))
+        Text(
+            text = track.artist,
+            style = AlbumPlayerTheme.typography.bodyLarge,
+            color = AlbumPlayerTheme.colorScheme.gray400,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(modifier = Modifier.height(Spacing.extraLarge))
+
+        // Progress Bar
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Slider(
+                value = if (uiState.duration > 0) {
+                    uiState.currentPosition.toFloat() / uiState.duration.toFloat()
+                } else {
+                    0f
+                },
+                onValueChange = { value ->
+                    val position = (value * uiState.duration).toLong()
+                    onIntent(PlayerIntent.SeekTo(position))
+                },
+                modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(modifier = Modifier.height(Spacing.medium))
 
-            // Track Info
-            Text(
-                text = track.title,
-                style = AlbumPlayerTheme.typography.headlineMedium,
-                color = AlbumPlayerTheme.colorScheme.gray50,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(Spacing.small))
-            Text(
-                text = track.artist,
-                style = AlbumPlayerTheme.typography.bodyLarge,
-                color = AlbumPlayerTheme.colorScheme.gray400,
-                textAlign = TextAlign.Center,
-            )
-
-            Spacer(modifier = Modifier.height(Spacing.extraLarge))
-
-            // Progress Bar
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Slider(
-                    value =
-                        if (uiState.duration > 0) {
-                            uiState.currentPosition.toFloat() / uiState.duration.toFloat()
-                        } else {
-                            0f
-                        },
-                    onValueChange = { value ->
-                        val position = (value * uiState.duration).toLong()
-                        onIntent(PlayerIntent.SeekTo(position))
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = formatDuration(uiState.currentPosition),
-                        style = AlbumPlayerTheme.typography.bodySmall,
-                        color = AlbumPlayerTheme.colorScheme.gray400,
-                    )
-                    Text(
-                        text = formatDuration(uiState.duration),
-                        style = AlbumPlayerTheme.typography.bodySmall,
-                        color = AlbumPlayerTheme.colorScheme.gray400,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Spacing.large))
-
-            // Playback Controls
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                IconButton(
-                    onClick = { onIntent(PlayerIntent.Previous) },
-                    modifier = Modifier.size(64.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SkipPrevious,
-                        contentDescription = "이전",
-                        modifier = Modifier.size(48.dp),
-                    )
-                }
-
-                IconButton(
-                    onClick = { onIntent(PlayerIntent.PlayPause) },
-                    modifier = Modifier.size(80.dp),
-                ) {
-                    Icon(
-                        imageVector =
-                            if (uiState.isPlaying) {
-                                Icons.Default.Pause
-                            } else {
-                                Icons.Default.PlayArrow
-                            },
-                        contentDescription = if (uiState.isPlaying) "일시정지" else "재생",
-                        modifier = Modifier.size(64.dp),
-                        tint = AlbumPlayerTheme.colorScheme.main1,
-                    )
-                }
-
-                IconButton(
-                    onClick = { onIntent(PlayerIntent.Next) },
-                    modifier = Modifier.size(64.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SkipNext,
-                        contentDescription = "다음",
-                        modifier = Modifier.size(48.dp),
-                    )
-                }
+                Text(
+                    text = formatDuration(uiState.currentPosition),
+                    style = AlbumPlayerTheme.typography.bodySmall,
+                    color = AlbumPlayerTheme.colorScheme.gray400,
+                )
+                Text(
+                    text = formatDuration(uiState.duration),
+                    style = AlbumPlayerTheme.typography.bodySmall,
+                    color = AlbumPlayerTheme.colorScheme.gray400,
+                )
             }
-        } ?: run {
-            Text(
-                text = "There is no track to play.",
-                style = AlbumPlayerTheme.typography.bodyLarge,
-                color = AlbumPlayerTheme.colorScheme.gray400,
-            )
+        }
+
+        Spacer(modifier = Modifier.height(Spacing.large))
+
+        // Playback Controls
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(
+                onClick = { onIntent(PlayerIntent.Previous) },
+                modifier = Modifier.size(64.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SkipPrevious,
+                    contentDescription = "이전",
+                    modifier = Modifier.size(48.dp),
+                )
+            }
+
+            IconButton(
+                onClick = { onIntent(PlayerIntent.PlayPause) },
+                modifier = Modifier.size(80.dp),
+            ) {
+                Icon(
+                    imageVector = if (uiState.isPlaying) {
+                        Icons.Default.Pause
+                    } else {
+                        Icons.Default.PlayArrow
+                    },
+                    contentDescription = if (uiState.isPlaying) "일시정지" else "재생",
+                    modifier = Modifier.size(64.dp),
+                    tint = AlbumPlayerTheme.colorScheme.main1,
+                )
+            }
+
+            IconButton(
+                onClick = { onIntent(PlayerIntent.Next) },
+                modifier = Modifier.size(64.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SkipNext,
+                    contentDescription = "다음",
+                    modifier = Modifier.size(48.dp),
+                )
+            }
         }
     }
 }
@@ -212,25 +246,23 @@ private fun formatDuration(milliseconds: Long): String {
 private fun PlayerScreenPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState =
-                PlayerUiState(
-                    currentTrack =
-                        Track(
-                            id = "track123",
-                            title = "Sample Track Title",
-                            artist = "Sample Artist",
-                            // 3분
-                            duration = 180000,
-                            streamUrl = "https://example.com/stream",
-                            artworkUrl = "https://example.com/artwork.jpg",
-                            albumId = "album123",
-                        ),
-                    isPlaying = true,
-                    // 1분
-                    currentPosition = 60000,
+            uiState = PlayerUiState(
+                currentTrack = Track(
+                    id = "track123",
+                    title = "Sample Track Title",
+                    artist = "Sample Artist",
                     // 3분
                     duration = 180000,
+                    streamUrl = "https://example.com/stream",
+                    artworkUrl = "https://example.com/artwork.jpg",
+                    albumId = "album123",
                 ),
+                isPlaying = true,
+                // 1분
+                currentPosition = 60000,
+                // 3분
+                duration = 180000,
+            ),
             onIntent = { },
         )
     }
@@ -241,23 +273,21 @@ private fun PlayerScreenPreview() {
 private fun PlayerScreenPausedPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState =
-                PlayerUiState(
-                    currentTrack =
-                        Track(
-                            id = "track123",
-                            title = "Sample Track Title",
-                            artist = "Sample Artist",
-                            duration = 180000,
-                            streamUrl = "https://example.com/stream",
-                            artworkUrl = "https://example.com/artwork.jpg",
-                            albumId = "album123",
-                        ),
-                    isPlaying = false,
-                    // 1분 30초
-                    currentPosition = 90000,
+            uiState = PlayerUiState(
+                currentTrack = Track(
+                    id = "track123",
+                    title = "Sample Track Title",
+                    artist = "Sample Artist",
                     duration = 180000,
+                    streamUrl = "https://example.com/stream",
+                    artworkUrl = "https://example.com/artwork.jpg",
+                    albumId = "album123",
                 ),
+                isPlaying = false,
+                // 1분 30초
+                currentPosition = 90000,
+                duration = 180000,
+            ),
             onIntent = { },
         )
     }
@@ -268,10 +298,9 @@ private fun PlayerScreenPausedPreview() {
 private fun PlayerScreenEmptyPreview() {
     AlbumPlayerTheme {
         PlayerScreen(
-            uiState =
-                PlayerUiState(
-                    currentTrack = null,
-                ),
+            uiState = PlayerUiState(
+                currentTrack = null,
+            ),
             onIntent = { },
         )
     }

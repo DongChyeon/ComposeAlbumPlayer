@@ -14,8 +14,6 @@ data class PlayerUiState(
 )
 
 sealed interface PlayerIntent {
-    data class InitializePlayer(val track: Track) : PlayerIntent
-
     data object PlayPause : PlayerIntent
 
     data class SeekTo(val position: Long) : PlayerIntent
