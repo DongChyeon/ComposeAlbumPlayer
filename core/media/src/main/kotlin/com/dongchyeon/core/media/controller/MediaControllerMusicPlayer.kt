@@ -10,13 +10,14 @@ import com.dongchyeon.core.media.service.MusicService
 import com.dongchyeon.domain.model.PlaybackState
 import com.dongchyeon.domain.model.RepeatMode
 import com.dongchyeon.domain.model.Track
+import com.dongchyeon.domain.player.MusicPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
@@ -24,31 +25,28 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * MediaController를 관리하고 UI에 노출하는 매니저
- * MusicService와 연결하여 재생 제어
- */
 @Singleton
-class MediaControllerManager @Inject constructor(
+class MediaControllerMusicPlayer @Inject constructor(
     @ApplicationContext private val context: Context,
-) {
+) : MusicPlayer {
+
     private var mediaController: MediaController? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     private val _playbackState = MutableStateFlow<PlaybackState>(PlaybackState.Idle)
-    val playbackState: Flow<PlaybackState> = _playbackState.asStateFlow()
+    override val playbackState: StateFlow<PlaybackState> = _playbackState.asStateFlow()
 
     private val _currentTrack = MutableStateFlow<Track?>(null)
-    val currentTrack: Flow<Track?> = _currentTrack.asStateFlow()
+    override val currentTrack: StateFlow<Track?> = _currentTrack.asStateFlow()
 
     private val _currentPosition = MutableStateFlow(0L)
-    val currentPosition: Flow<Long> = _currentPosition.asStateFlow()
+    override val currentPosition: StateFlow<Long> = _currentPosition.asStateFlow()
 
     private val _duration = MutableStateFlow(0L)
-    val duration: Flow<Long> = _duration.asStateFlow()
+    override val duration: StateFlow<Long> = _duration.asStateFlow()
 
     private val _repeatMode = MutableStateFlow(RepeatMode.NONE)
-    val repeatMode: Flow<RepeatMode> = _repeatMode.asStateFlow()
+    override val repeatMode: StateFlow<RepeatMode> = _repeatMode.asStateFlow()
 
     // 플레이리스트 정보 저장
     private var playlist: List<Track> = emptyList()
@@ -56,14 +54,11 @@ class MediaControllerManager @Inject constructor(
 
     init {
         scope.launch {
-            connectToService()
+            initialize()
         }
     }
 
-    /**
-     * MusicService에 연결
-     */
-    private suspend fun connectToService() {
+    override suspend fun initialize() {
         val sessionToken = SessionToken(
             context,
             ComponentName(context, MusicService::class.java),
@@ -77,9 +72,6 @@ class MediaControllerManager @Inject constructor(
         startPositionUpdater()
     }
 
-    /**
-     * Player 상태 변화 리스너 설정
-     */
     private fun setupPlayerListener() {
         mediaController?.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -112,9 +104,6 @@ class MediaControllerManager @Inject constructor(
         })
     }
 
-    /**
-     * PlaybackState 업데이트
-     */
     private fun updatePlaybackState() {
         val controller = mediaController ?: return
         _playbackState.value = when {
@@ -125,9 +114,6 @@ class MediaControllerManager @Inject constructor(
         }
     }
 
-    /**
-     * 현재 위치 주기적 업데이트
-     */
     private fun startPositionUpdater() {
         scope.launch {
             while (isActive) {
@@ -141,10 +127,7 @@ class MediaControllerManager @Inject constructor(
         }
     }
 
-    /**
-     * 트랙 재생
-     */
-    fun play(track: Track) {
+    override fun play(track: Track) {
         _currentTrack.value = track
 
         // 플레이리스트에서 해당 트랙 찾기
@@ -165,41 +148,26 @@ class MediaControllerManager @Inject constructor(
         mediaController?.play()
     }
 
-    /**
-     * 일시정지
-     */
-    fun pause() {
+    override fun pause() {
         mediaController?.pause()
     }
 
-    /**
-     * 재생 재개
-     */
-    fun resume() {
+    override fun resume() {
         mediaController?.play()
     }
 
-    /**
-     * 정지
-     */
-    fun stop() {
+    override fun stop() {
         _currentTrack.value = null
         mediaController?.stop()
         mediaController?.clearMediaItems()
     }
 
-    /**
-     * 위치 이동
-     */
-    fun seekTo(positionMs: Long) {
+    override fun seekTo(positionMs: Long) {
         mediaController?.seekTo(positionMs)
         _currentPosition.value = positionMs
     }
 
-    /**
-     * 플레이리스트 설정
-     */
-    fun setPlaylist(tracks: List<Track>) {
+    override fun setPlaylist(tracks: List<Track>) {
         playlist = tracks
 
         val mediaItems = tracks.map { track ->
@@ -217,10 +185,7 @@ class MediaControllerManager @Inject constructor(
         }
     }
 
-    /**
-     * 다음 트랙
-     */
-    fun skipToNext() {
+    override fun skipToNext() {
         if (currentIndex >= 0 && currentIndex < playlist.size - 1) {
             currentIndex++
             val nextTrack = playlist[currentIndex]
@@ -228,10 +193,7 @@ class MediaControllerManager @Inject constructor(
         }
     }
 
-    /**
-     * 이전 트랙 (5초 임계값)
-     */
-    fun skipToPrevious() {
+    override fun skipToPrevious() {
         val currentPos = mediaController?.currentPosition ?: 0L
 
         when {
@@ -246,10 +208,7 @@ class MediaControllerManager @Inject constructor(
         }
     }
 
-    /**
-     * 반복 모드 설정
-     */
-    fun setRepeatMode(mode: RepeatMode) {
+    override fun setRepeatMode(mode: RepeatMode) {
         _repeatMode.value = mode
         mediaController?.repeatMode = when (mode) {
             RepeatMode.NONE -> Player.REPEAT_MODE_OFF
@@ -258,10 +217,7 @@ class MediaControllerManager @Inject constructor(
         }
     }
 
-    /**
-     * 리소스 해제
-     */
-    fun release() {
+    override fun release() {
         mediaController?.release()
         mediaController = null
     }

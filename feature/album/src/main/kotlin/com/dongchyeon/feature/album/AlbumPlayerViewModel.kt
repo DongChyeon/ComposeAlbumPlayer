@@ -2,10 +2,10 @@ package com.dongchyeon.feature.album
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.dongchyeon.core.media.controller.MediaControllerManager
 import com.dongchyeon.core.ui.base.BaseViewModel
 import com.dongchyeon.domain.model.PlaybackState
 import com.dongchyeon.domain.model.Track
+import com.dongchyeon.domain.player.MusicPlayer
 import com.dongchyeon.domain.repository.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -14,17 +14,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Album과 Player 화면에서 공유하는 통합 ViewModel (MVI 패턴)
- * - 앨범 정보 로드 및 관리
- * - 트랙 리스트 관리
- * - 재생 제어 및 상태 관리
- */
 @HiltViewModel
 class AlbumPlayerViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val albumRepository: AlbumRepository,
-    private val mediaControllerManager: MediaControllerManager,
+    private val musicPlayer: MusicPlayer,
 ) : BaseViewModel<AlbumPlayerUiState, AlbumPlayerIntent, AlbumPlayerSideEffect>(
     initialState = AlbumPlayerUiState(isLoading = true),
 ) {
@@ -104,11 +98,11 @@ class AlbumPlayerViewModel @Inject constructor(
     }
 
     /**
-     * MediaController 상태 관찰
+     * MusicPlayer 상태 관찰
      */
     private fun observeMediaController() {
         // PlaybackState 관찰
-        mediaControllerManager.playbackState
+        musicPlayer.playbackState
             .onEach { state ->
                 updateState {
                     it.copy(
@@ -120,21 +114,21 @@ class AlbumPlayerViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         // CurrentTrack 관찰
-        mediaControllerManager.currentTrack
+        musicPlayer.currentTrack
             .onEach { track ->
                 updateState { it.copy(currentTrack = track) }
             }
             .launchIn(viewModelScope)
 
         // CurrentPosition 관찰
-        mediaControllerManager.currentPosition
+        musicPlayer.currentPosition
             .onEach { position ->
                 updateState { it.copy(currentPosition = position) }
             }
             .launchIn(viewModelScope)
 
         // Duration 관찰
-        mediaControllerManager.duration
+        musicPlayer.duration
             .onEach { duration ->
                 updateState { it.copy(duration = duration) }
             }
@@ -149,46 +143,34 @@ class AlbumPlayerViewModel @Inject constructor(
             val tracksList = currentState.album?.tracks ?: emptyList()
             if (tracksList.isNotEmpty()) {
                 // 플레이리스트 설정
-                mediaControllerManager.setPlaylist(tracksList)
+                musicPlayer.setPlaylist(tracksList)
                 // 선택한 트랙부터 재생
-                mediaControllerManager.play(track)
+                musicPlayer.play(track)
             }
         }
     }
 
-    /**
-     * 재생/일시정지 토글
-     */
     private fun togglePlayPause() {
         if (currentState.isPlaying) {
-            mediaControllerManager.pause()
+            musicPlayer.pause()
         } else {
-            mediaControllerManager.resume()
+            musicPlayer.resume()
         }
     }
 
-    /**
-     * 위치 이동
-     */
     private fun seekTo(position: Long) {
-        mediaControllerManager.seekTo(position)
+        musicPlayer.seekTo(position)
     }
 
-    /**
-     * 다음 곡
-     */
     private fun skipToNext() {
         viewModelScope.launch {
-            mediaControllerManager.skipToNext()
+            musicPlayer.skipToNext()
         }
     }
 
-    /**
-     * 이전 곡
-     */
     private fun skipToPrevious() {
         viewModelScope.launch {
-            mediaControllerManager.skipToPrevious()
+            musicPlayer.skipToPrevious()
         }
     }
 }

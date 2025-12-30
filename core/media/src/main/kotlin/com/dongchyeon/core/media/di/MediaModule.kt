@@ -1,16 +1,20 @@
 package com.dongchyeon.core.media.di
 
+import com.dongchyeon.core.media.controller.MediaControllerMusicPlayer
+import com.dongchyeon.domain.player.MusicPlayer
+import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object MediaModule {
-    // MediaControllerManager는 @Inject constructor가 있으므로
-    // 자동으로 Hilt가 제공함
-    // 명시적으로 제공하려면:
-    // @Provides
-    // @Singleton
-    // fun provideMediaControllerManager(...): MediaControllerManager = ...
+abstract class MediaModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindMusicPlayer(
+        impl: MediaControllerMusicPlayer,
+    ): MusicPlayer
 }
