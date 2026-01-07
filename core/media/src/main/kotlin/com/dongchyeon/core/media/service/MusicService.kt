@@ -3,27 +3,47 @@ package com.dongchyeon.core.media.service
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
+import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Foreground Service로 동작하는 음악 재생 서비스
  * MediaSession을 통해 Notification 및 외부 제어 지원
+ *
+ * 캐싱 정책:
+ * - 디바이스 가용 공간의 3% (50MB ~ 500MB)
+ * - LRU 방식으로 오래된 캐시 자동 삭제
+ * - 청크 크기 2MB (음악에 최적화)
  */
+@OptIn(UnstableApi::class)
 @AndroidEntryPoint
 class MusicService : MediaSessionService() {
+
+    @Inject
+    lateinit var cacheDataSourceFactory: DataSource.Factory
+
     private var mediaSession: MediaSession? = null
     private lateinit var player: ExoPlayer
 
     override fun onCreate() {
         super.onCreate()
 
-        // ExoPlayer 설정
+        // 캐시를 적용한 MediaSourceFactory 생성
+        val mediaSourceFactory = DefaultMediaSourceFactory(this)
+            .setDataSourceFactory(cacheDataSourceFactory)
+
+        // ExoPlayer 설정 (캐싱 적용)
         player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
