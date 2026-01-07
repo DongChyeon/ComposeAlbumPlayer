@@ -3,11 +3,13 @@ package com.dongchyeon.core.media.controller
 import android.content.ComponentName
 import android.content.Context
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.dongchyeon.core.media.service.MusicService
 import com.dongchyeon.domain.model.PlaybackState
+import com.dongchyeon.domain.model.PlayerError
 import com.dongchyeon.domain.model.RepeatMode
 import com.dongchyeon.domain.model.ShuffleMode
 import com.dongchyeon.domain.model.Track
@@ -17,8 +19,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.isActive
@@ -51,6 +56,9 @@ class MediaControllerMusicPlayer @Inject constructor(
 
     private val _shuffleMode = MutableStateFlow(ShuffleMode.OFF)
     override val shuffleMode: StateFlow<ShuffleMode> = _shuffleMode.asStateFlow()
+
+    private val _playerError = MutableSharedFlow<PlayerError>()
+    override val playerError: SharedFlow<PlayerError> = _playerError.asSharedFlow()
 
     // 플레이리스트 정보 저장
     private var playlist: List<Track> = emptyList()
@@ -108,6 +116,39 @@ class MediaControllerMusicPlayer @Inject constructor(
 
             override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
                 _shuffleMode.value = if (shuffleModeEnabled) ShuffleMode.ON else ShuffleMode.OFF
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                val errorMessage = when (error.errorCode) {
+                    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED ->
+                        "Network connection failed"
+                    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT ->
+                        "Network connection timed out"
+                    PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS ->
+                        "Unable to play this track"
+                    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND ->
+                        "Track not found"
+                    PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,
+                    PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED,
+                    ->
+                        "Unsupported audio format"
+                    else ->
+                        "Unable to play this track"
+                }
+
+                scope.launch {
+                    _playerError.emit(
+                        PlayerError(
+                            message = errorMessage,
+                            trackId = mediaController?.currentMediaItem?.mediaId,
+                        ),
+                    )
+                }
+
+                // 다음 트랙으로 스킵
+                if (playlist.isNotEmpty() && currentIndex < playlist.size - 1) {
+                    skipToNext()
+                }
             }
         })
     }

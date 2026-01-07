@@ -45,4 +45,5 @@ sealed interface AlbumPlayerIntent {
 sealed interface AlbumPlayerSideEffect {
     data object NavigateBack : AlbumPlayerSideEffect
     data class NavigateToPlayer(val track: Track) : AlbumPlayerSideEffect
+    data class ShowPlaybackError(val message: String) : AlbumPlayerSideEffect
 }

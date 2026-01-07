@@ -151,6 +151,13 @@ class AlbumPlayerViewModel @Inject constructor(
                 updateState { it.copy(shuffleMode = mode) }
             }
             .launchIn(viewModelScope)
+
+        // PlayerError 관찰
+        musicPlayer.playerError
+            .onEach { error ->
+                sendSideEffect(AlbumPlayerSideEffect.ShowPlaybackError(error.message))
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun playTrack(track: Track) {

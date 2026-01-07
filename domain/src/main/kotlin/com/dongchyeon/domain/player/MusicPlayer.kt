@@ -1,9 +1,11 @@
 package com.dongchyeon.domain.player
 
 import com.dongchyeon.domain.model.PlaybackState
+import com.dongchyeon.domain.model.PlayerError
 import com.dongchyeon.domain.model.RepeatMode
 import com.dongchyeon.domain.model.ShuffleMode
 import com.dongchyeon.domain.model.Track
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface MusicPlayer {
@@ -14,6 +16,9 @@ interface MusicPlayer {
     val duration: StateFlow<Long>
     val repeatMode: StateFlow<RepeatMode>
     val shuffleMode: StateFlow<ShuffleMode>
+
+    // 에러 이벤트 (일회성)
+    val playerError: SharedFlow<PlayerError>
 
     // 재생 제어
     suspend fun initialize()
