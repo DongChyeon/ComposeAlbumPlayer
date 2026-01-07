@@ -86,9 +86,14 @@ class AlbumPlayerViewModel @Inject constructor(
                     val albumData = albumResult.getOrNull()!!
                     val tracksList = tracksResult.getOrNull()!!
 
+                    // 재생 불가능한 트랙 필터링 (streamUrl 없거나 isStreamable = false)
+                    val playableTracks = tracksList.filter {
+                        it.isStreamable && it.streamUrl.isNotBlank()
+                    }
+
                     updateState {
                         it.copy(
-                            album = albumData.copy(tracks = tracksList),
+                            album = albumData.copy(tracks = playableTracks),
                             isLoading = false,
                             error = null,
                         )

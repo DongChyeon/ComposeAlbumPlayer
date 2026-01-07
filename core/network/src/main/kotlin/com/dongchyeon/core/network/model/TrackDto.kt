@@ -31,6 +31,8 @@ data class TrackDto(
     val permalink: String? = null,
     @SerialName("stream")
     val stream: StreamDto? = null,
+    @SerialName("is_streamable")
+    val isStreamable: Boolean = true,
 )
 
 @Serializable
