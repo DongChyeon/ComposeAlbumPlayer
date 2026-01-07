@@ -53,8 +53,8 @@ fun NavGraphBuilder.albumGraph(
                         is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
                             scope.launch {
                                 snackbarHostState.showSnackbar(sideEffect.message)
+                                onNavigateBack()
                             }
-                            onNavigateBack()
                         }
                     }
                 }
@@ -88,8 +88,8 @@ fun NavGraphBuilder.albumGraph(
                         is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
                             scope.launch {
                                 snackbarHostState.showSnackbar(sideEffect.message)
+                                onNavigateBack()
                             }
-                            onNavigateBack()
                         }
                         else -> { /* 앨범 화면에서 처리 */ }
                     }
