@@ -1,5 +1,6 @@
 package com.dongchyeon.compose.album.player.navigation
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -12,6 +13,7 @@ import com.dongchyeon.feature.home.HomeRoute
 @Composable
 fun NavGraph(
     navController: NavHostController,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -32,6 +34,7 @@ fun NavGraph(
         // PlaybackViewModel을 Album과 Player 화면에서 공유
         albumGraph(
             navController = navController,
+            snackbarHostState = snackbarHostState,
             onNavigateBack = { navController.navigateUp() },
         )
     }

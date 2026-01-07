@@ -8,6 +8,7 @@ data class Track(
     val streamUrl: String,
     val artworkUrl: String,
     val albumId: String? = null,
+    val isStreamable: Boolean = true,
 ) {
     companion object {
         val Empty =
@@ -19,6 +20,7 @@ data class Track(
                 streamUrl = "",
                 artworkUrl = "",
                 albumId = null,
+                isStreamable = false,
             )
     }
 }

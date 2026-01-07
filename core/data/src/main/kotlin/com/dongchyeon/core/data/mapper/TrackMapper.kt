@@ -12,6 +12,7 @@ fun TrackDto.toDomain(albumId: String? = null): Track {
         streamUrl = stream?.url ?: "",
         artworkUrl = artwork?.large ?: artwork?.medium ?: artwork?.small ?: "",
         albumId = albumId,
+        isStreamable = isStreamable,
     )
 }
 

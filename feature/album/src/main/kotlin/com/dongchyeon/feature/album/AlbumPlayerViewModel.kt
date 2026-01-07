@@ -86,9 +86,25 @@ class AlbumPlayerViewModel @Inject constructor(
                     val albumData = albumResult.getOrNull()!!
                     val tracksList = tracksResult.getOrNull()!!
 
+                    // 재생 불가능한 트랙 필터링 (streamUrl 없거나 isStreamable = false)
+                    val playableTracks = tracksList.filter {
+                        it.isStreamable && it.streamUrl.isNotBlank()
+                    }
+
+                    // 재생 가능한 트랙이 없으면 메시지와 함께 뒤로 이동
+                    if (playableTracks.isEmpty()) {
+                        updateState { it.copy(isLoading = false) }
+                        sendSideEffect(
+                            AlbumPlayerSideEffect.ShowErrorAndNavigateBack(
+                                "No playable tracks available in this album",
+                            ),
+                        )
+                        return@launchInScope
+                    }
+
                     updateState {
                         it.copy(
-                            album = albumData.copy(tracks = tracksList),
+                            album = albumData.copy(tracks = playableTracks),
                             isLoading = false,
                             error = null,
                         )
@@ -144,6 +160,13 @@ class AlbumPlayerViewModel @Inject constructor(
         musicPlayer.shuffleMode
             .onEach { mode ->
                 updateState { it.copy(shuffleMode = mode) }
+            }
+            .launchIn(viewModelScope)
+
+        // PlayerError 관찰
+        musicPlayer.playerError
+            .onEach { error ->
+                sendSideEffect(AlbumPlayerSideEffect.ShowPlaybackError(error.message))
             }
             .launchIn(viewModelScope)
     }

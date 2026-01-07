@@ -1,7 +1,9 @@
 package com.dongchyeon.feature.album.navigation
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -13,9 +15,11 @@ import com.dongchyeon.feature.album.AlbumPlayerSideEffect
 import com.dongchyeon.feature.album.AlbumPlayerViewModel
 import com.dongchyeon.feature.album.AlbumRoute
 import com.dongchyeon.feature.album.PlayerRoute
+import kotlinx.coroutines.launch
 
 fun NavGraphBuilder.albumGraph(
     navController: NavController,
+    snackbarHostState: SnackbarHostState,
     onNavigateBack: () -> Unit,
 ) {
     navigation(
@@ -32,6 +36,7 @@ fun NavGraphBuilder.albumGraph(
                 navController.getBackStackEntry(AlbumDestination.GRAPH_ROUTE)
             }
             val viewModel: AlbumPlayerViewModel = hiltViewModel(parentEntry)
+            val scope = rememberCoroutineScope()
 
             LaunchedEffect(Unit) {
                 viewModel.sideEffect.collect { sideEffect ->
@@ -39,6 +44,17 @@ fun NavGraphBuilder.albumGraph(
                         is AlbumPlayerSideEffect.NavigateBack -> onNavigateBack()
                         is AlbumPlayerSideEffect.NavigateToPlayer -> {
                             navController.navigate(AlbumDestination.Player.createRoute(sideEffect.track.id))
+                        }
+                        is AlbumPlayerSideEffect.ShowPlaybackError -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(sideEffect.message)
+                            }
+                        }
+                        is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(sideEffect.message)
+                                onNavigateBack()
+                            }
                         }
                     }
                 }
@@ -59,6 +75,26 @@ fun NavGraphBuilder.albumGraph(
                 navController.getBackStackEntry(AlbumDestination.GRAPH_ROUTE)
             }
             val viewModel: AlbumPlayerViewModel = hiltViewModel(parentEntry)
+            val scope = rememberCoroutineScope()
+
+            LaunchedEffect(Unit) {
+                viewModel.sideEffect.collect { sideEffect ->
+                    when (sideEffect) {
+                        is AlbumPlayerSideEffect.ShowPlaybackError -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(sideEffect.message)
+                            }
+                        }
+                        is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(sideEffect.message)
+                                onNavigateBack()
+                            }
+                        }
+                        else -> { /* 앨범 화면에서 처리 */ }
+                    }
+                }
+            }
 
             PlayerRoute(
                 viewModel = viewModel,
