@@ -91,6 +91,17 @@ class AlbumPlayerViewModel @Inject constructor(
                         it.isStreamable && it.streamUrl.isNotBlank()
                     }
 
+                    // 재생 가능한 트랙이 없으면 메시지와 함께 뒤로 이동
+                    if (playableTracks.isEmpty()) {
+                        updateState { it.copy(isLoading = false) }
+                        sendSideEffect(
+                            AlbumPlayerSideEffect.ShowErrorAndNavigateBack(
+                                "No playable tracks available in this album",
+                            ),
+                        )
+                        return@launchInScope
+                    }
+
                     updateState {
                         it.copy(
                             album = albumData.copy(tracks = playableTracks),

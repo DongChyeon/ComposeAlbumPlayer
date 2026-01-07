@@ -50,6 +50,12 @@ fun NavGraphBuilder.albumGraph(
                                 snackbarHostState.showSnackbar(sideEffect.message)
                             }
                         }
+                        is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(sideEffect.message)
+                            }
+                            onNavigateBack()
+                        }
                     }
                 }
             }
@@ -78,6 +84,12 @@ fun NavGraphBuilder.albumGraph(
                             scope.launch {
                                 snackbarHostState.showSnackbar(sideEffect.message)
                             }
+                        }
+                        is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(sideEffect.message)
+                            }
+                            onNavigateBack()
                         }
                         else -> { /* 앨범 화면에서 처리 */ }
                     }
