@@ -7,7 +7,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -36,7 +36,7 @@ import javax.inject.Inject
 class MusicService : MediaSessionService() {
 
     @Inject
-    lateinit var cacheDataSourceFactory: DataSource.Factory
+    lateinit var cacheDataSourceFactory: CacheDataSource.Factory
 
     private var mediaSession: MediaSession? = null
     private lateinit var player: ExoPlayer
@@ -51,14 +51,20 @@ class MusicService : MediaSessionService() {
         // 음악 재생에 최적화된 LoadControl 설정
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                /* minBufferMs */ 30_000,                     // 30초 (기본 50초)
-                /* maxBufferMs */ 120_000,                    // 2분 (기본 50초)
-                /* bufferForPlaybackMs */ 1_500,              // 1.5초 (기본 2.5초)
-                /* bufferForPlaybackAfterRebufferMs */ 3_000  // 3초 (기본 5초)
+                // minBufferMs: 30초 (기본 50초)
+                30_000,
+                // maxBufferMs: 2분 (기본 50초)
+                120_000,
+                // bufferForPlaybackMs: 1.5초 (기본 2.5초)
+                1_500,
+                // bufferForPlaybackAfterRebufferMs: 3초 (기본 5초)
+                3_000,
             )
             .setBackBuffer(
-                /* backBufferDurationMs */ 30_000,            // 30초 (기본 0초)
-                /* retainBackBufferFromKeyframe */ false
+                // backBufferDurationMs: 30초 (기본 0초)
+                30_000,
+                // retainBackBufferFromKeyframe
+                false,
             )
             .build()
 
@@ -78,7 +84,6 @@ class MusicService : MediaSessionService() {
 
         // MediaSession 생성
         mediaSession = MediaSession.Builder(this, player)
-            .setCallback(MediaSessionCallback())
             .setSessionActivity(getPendingIntent())
             .build()
     }
@@ -111,15 +116,6 @@ class MusicService : MediaSessionService() {
             mediaSession = null
         }
         super.onDestroy()
-    }
-
-    /**
-     * MediaSession 콜백
-     * 필요시 커스텀 명령 처리 가능
-     */
-    private inner class MediaSessionCallback : MediaSession.Callback {
-        // 기본 재생 제어(play, pause, seekTo 등)는 자동으로 처리됨
-        // 필요시 onCustomCommand 등으로 커스텀 명령 추가 가능
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {

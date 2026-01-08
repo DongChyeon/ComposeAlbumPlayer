@@ -7,6 +7,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.dongchyeon.core.media.preload.MusicPreloadManager
 import com.dongchyeon.core.media.service.MusicService
 import com.dongchyeon.domain.model.PlaybackState
 import com.dongchyeon.domain.model.PlayerError
@@ -34,6 +35,7 @@ import javax.inject.Singleton
 @Singleton
 class MediaControllerMusicPlayer @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val preloadManager: MusicPreloadManager,
 ) : MusicPlayer {
 
     private var mediaController: MediaController? = null
@@ -102,6 +104,9 @@ class MediaControllerMusicPlayer @Inject constructor(
                 if (index >= 0 && index < playlist.size) {
                     currentIndex = index
                     _currentTrack.value = playlist[index]
+
+                    // 다음/이전 곡 프리로드 트리거
+                    preloadManager.onCurrentIndexChanged(playlist, index)
                 }
             }
 
@@ -231,6 +236,8 @@ class MediaControllerMusicPlayer @Inject constructor(
 
         if (tracks.isNotEmpty() && currentIndex < 0) {
             currentIndex = 0
+            // 플레이리스트 설정 시 다음 곡 프리로드 시작
+            preloadManager.onCurrentIndexChanged(tracks, 0)
         }
     }
 
@@ -272,6 +279,7 @@ class MediaControllerMusicPlayer @Inject constructor(
     }
 
     override fun release() {
+        preloadManager.release()
         mediaController?.release()
         mediaController = null
     }
