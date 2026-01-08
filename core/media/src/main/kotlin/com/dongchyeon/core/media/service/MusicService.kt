@@ -8,6 +8,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaSession
@@ -23,6 +24,12 @@ import javax.inject.Inject
  * - 디바이스 가용 공간의 3% (50MB ~ 500MB)
  * - LRU 방식으로 오래된 캐시 자동 삭제
  * - 청크 크기 2MB (음악에 최적화)
+ *
+ * 버퍼링 정책 (음악 최적화):
+ * - minBuffer: 30초 (비디오 기본 50초 대비 감소 - 음악은 비트레이트가 낮아 충분)
+ * - maxBuffer: 2분 (비디오 기본 50초 대비 증가 - 다음 곡까지 여유있게 버퍼링)
+ * - bufferForPlayback: 1.5초 (비디오 기본 2.5초 대비 감소 - 빠른 재생 시작)
+ * - backBuffer: 30초 (비디오 기본 0초 대비 증가 - 뒤로 감기 시 즉각 반응)
  */
 @OptIn(UnstableApi::class)
 @AndroidEntryPoint
@@ -41,9 +48,24 @@ class MusicService : MediaSessionService() {
         val mediaSourceFactory = DefaultMediaSourceFactory(this)
             .setDataSourceFactory(cacheDataSourceFactory)
 
-        // ExoPlayer 설정 (캐싱 적용)
+        // 음악 재생에 최적화된 LoadControl 설정
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                /* minBufferMs */ 30_000,                     // 30초 (기본 50초)
+                /* maxBufferMs */ 120_000,                    // 2분 (기본 50초)
+                /* bufferForPlaybackMs */ 1_500,              // 1.5초 (기본 2.5초)
+                /* bufferForPlaybackAfterRebufferMs */ 3_000  // 3초 (기본 5초)
+            )
+            .setBackBuffer(
+                /* backBufferDurationMs */ 30_000,            // 30초 (기본 0초)
+                /* retainBackBufferFromKeyframe */ false
+            )
+            .build()
+
+        // ExoPlayer 설정 (캐싱 + 음악 최적화 버퍼링 적용)
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(mediaSourceFactory)
+            .setLoadControl(loadControl)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
