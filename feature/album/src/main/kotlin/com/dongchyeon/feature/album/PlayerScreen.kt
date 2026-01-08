@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -171,7 +170,7 @@ private fun PlayerContent(
         ) {
             IconButton(
                 onClick = { onIntent(AlbumPlayerIntent.ToggleShuffle) },
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(40.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.Shuffle,
@@ -181,26 +180,24 @@ private fun PlayerContent(
                     } else {
                         AlbumPlayerTheme.colorScheme.gray400
                     },
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(24.dp),
                 )
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
-
             IconButton(
                 onClick = { onIntent(AlbumPlayerIntent.SkipToPrevious) },
-                modifier = Modifier.size(80.dp),
+                modifier = Modifier.size(56.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.SkipPrevious,
                     contentDescription = "이전",
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(36.dp),
                 )
             }
 
             IconButton(
                 onClick = { onIntent(AlbumPlayerIntent.TogglePlayPause) },
-                modifier = Modifier.size(80.dp),
+                modifier = Modifier.size(64.dp),
             ) {
                 Icon(
                     imageVector = if (uiState.isPlaying) {
@@ -209,27 +206,25 @@ private fun PlayerContent(
                         Icons.Default.PlayArrow
                     },
                     contentDescription = if (uiState.isPlaying) "일시정지" else "재생",
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(48.dp),
                     tint = AlbumPlayerTheme.colorScheme.main1,
                 )
             }
 
             IconButton(
                 onClick = { onIntent(AlbumPlayerIntent.SkipToNext) },
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(56.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.SkipNext,
                     contentDescription = "다음",
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(36.dp),
                 )
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
-
             IconButton(
                 onClick = { onIntent(AlbumPlayerIntent.ToggleRepeatMode) },
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(40.dp),
             ) {
                 Icon(
                     imageVector = when (uiState.repeatMode) {
@@ -242,7 +237,7 @@ private fun PlayerContent(
                     } else {
                         AlbumPlayerTheme.colorScheme.gray400
                     },
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(24.dp),
                 )
             }
         }

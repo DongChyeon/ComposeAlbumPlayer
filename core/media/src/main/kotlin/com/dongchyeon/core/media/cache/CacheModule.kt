@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
-import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.CacheDataSink
 import androidx.media3.datasource.cache.CacheDataSource
@@ -68,7 +67,7 @@ object CacheModule {
     }
 
     /**
-     * 캐시를 적용한 DataSource.Factory 제공
+     * 캐시를 적용한 CacheDataSource.Factory 제공
      *
      * - 캐시 히트 시: 디스크에서 읽기
      * - 캐시 미스 시: 네트워크에서 다운로드 후 캐시에 저장
@@ -78,7 +77,7 @@ object CacheModule {
     @Singleton
     fun provideCacheDataSourceFactory(
         simpleCache: SimpleCache,
-    ): DataSource.Factory {
+    ): CacheDataSource.Factory {
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
