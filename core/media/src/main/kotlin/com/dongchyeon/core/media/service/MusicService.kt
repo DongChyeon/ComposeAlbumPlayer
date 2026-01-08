@@ -54,7 +54,7 @@ class MusicService : MediaSessionService() {
         private const val TAG = "MusicService"
 
         // 프리로드 시간 설정 (ms)
-        private const val ADJACENT_TRACK_PRELOAD_DURATION_MS = 30_000L  // 인접 곡: 30초
+        private const val ADJACENT_TRACK_PRELOAD_DURATION_MS = 30_000L // 인접 곡: 30초
     }
 
     @Inject
@@ -77,27 +77,29 @@ class MusicService : MediaSessionService() {
         // 음악 재생에 최적화된 LoadControl 설정
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                /* minBufferMs */ 30_000,      // 30초 (기본 50초)
-                /* maxBufferMs */ 120_000,     // 2분 (기본 50초)
-                /* bufferForPlaybackMs */ 1_500,              // 1.5초 (기본 2.5초)
-                /* bufferForPlaybackAfterRebufferMs */ 3_000, // 3초 (기본 5초)
+                // 30초 (기본 50초)
+                30_000,
+                // 2분 (기본 50초)
+                120_000,
+                // 1.5초 (기본 2.5초)
+                1_500,
+                // 3초 (기본 5초)
+                3_000,
             )
             .setBackBuffer(
-                /* backBufferDurationMs */ 30_000, // 30초 (기본 0초)
-                /* retainBackBufferFromKeyframe */ false,
+                // 30초 (기본 0초)
+                30_000,
+                false,
             )
             .build()
 
-        // PreloadManager 빌더 생성 (동적 인덱스 참조를 위해 inner class 사용)
         val preloadManagerBuilder = DefaultPreloadManager.Builder(
             this,
             MusicPreloadStatusControl(),
         )
 
-        // PreloadManager 저장 (나중에 add(), getMediaSource() 호출에 사용)
         preloadManager = preloadManagerBuilder.build()
 
-        // ExoPlayer 빌드 (PreloadManager와 컴포넌트 공유)
         player = preloadManagerBuilder.buildExoPlayer(
             ExoPlayer.Builder(this)
                 .setMediaSourceFactory(mediaSourceFactory)
@@ -112,7 +114,6 @@ class MusicService : MediaSessionService() {
                 .setHandleAudioBecomingNoisy(true),
         )
 
-        // MediaSession 생성 (CustomCommand 콜백 포함)
         mediaSession = MediaSession.Builder(this, player)
             .setCallback(MediaSessionCallback())
             .setSessionActivity(getPendingIntent())
@@ -207,7 +208,7 @@ class MusicService : MediaSessionService() {
             val distance = abs(i - newIndex)
             if (distance in 1..4) {
                 val mediaItem = player.getMediaItemAt(i)
-                preloadManager.add(mediaItem, /* rankingData */ i)
+                preloadManager.add(mediaItem, i)
                 Log.d(TAG, "Added to preload: ${mediaItem.mediaId} (distance=$distance)")
             }
         }
@@ -218,45 +219,46 @@ class MusicService : MediaSessionService() {
     /**
      * 프리로드된 트랙으로 재생 전환
      *
-     * PreloadManager에서 준비된 MediaSource를 가져와 즉시 재생합니다.
-     * 프리로드되지 않은 경우 일반 재생으로 fallback합니다.
+     * 플레이리스트 내에서 트랙을 전환합니다.
+     * PreloadManager가 CacheDataSource를 통해 데이터를 미리 캐싱했으므로,
+     * seekTo()로 전환해도 캐시 히트로 빠르게 재생됩니다.
+     *
+     * 참고: setMediaSource()를 사용하면 플레이리스트가 손실되므로 seekTo() 사용
      *
      * @param mediaId 재생할 트랙의 mediaId
      * @return 성공 여부
      */
     private fun playPreloadedTrack(mediaId: String): Boolean {
+        Log.d(TAG, "playPreloadedTrack called with mediaId: $mediaId")
+        Log.d(TAG, "Player mediaItemCount: ${player.mediaItemCount}")
+
+        // 플레이리스트의 모든 mediaId 로깅
+        val allMediaIds = (0 until player.mediaItemCount).map {
+            player.getMediaItemAt(it).mediaId
+        }
+        Log.d(TAG, "Available mediaIds in player: $allMediaIds")
+
         // 플레이리스트에서 해당 mediaId의 인덱스 찾기
         val targetIndex = (0 until player.mediaItemCount)
             .firstOrNull { player.getMediaItemAt(it).mediaId == mediaId }
-            ?: return false
 
-        val mediaItem = player.getMediaItemAt(targetIndex)
-
-        // 프리로드된 MediaSource 가져오기
-        val preloadedSource = preloadManager.getMediaSource(mediaItem)
-
-        return if (preloadedSource != null) {
-            // 프리로드된 소스로 즉시 재생
-            Log.d(TAG, "Playing with preloaded MediaSource: $mediaId")
-            player.setMediaSource(preloadedSource)
-            player.prepare()
-            player.play()
-
-            // 현재 인덱스 업데이트 및 다음 프리로드 트리거
-            currentPlayingIndex = targetIndex
-            preloadAdjacentTracks(targetIndex)
-            true
-        } else {
-            // 프리로드되지 않은 경우 일반 재생
-            Log.d(TAG, "MediaSource not preloaded, playing normally: $mediaId")
-            player.seekTo(targetIndex, 0)
-            player.play()
-
-            // 현재 인덱스 업데이트 및 프리로드 트리거
-            currentPlayingIndex = targetIndex
-            preloadAdjacentTracks(targetIndex)
-            true
+        if (targetIndex == null) {
+            Log.e(TAG, "mediaId not found in player playlist: $mediaId")
+            return false
         }
+
+        Log.d(TAG, "Found targetIndex: $targetIndex for mediaId: $mediaId")
+
+        // 플레이리스트 내에서 트랙 전환 (seekTo로 플레이리스트 유지)
+        player.seekTo(targetIndex, 0)
+        player.play()
+
+        Log.d(TAG, "seekTo($targetIndex, 0) and play() called")
+
+        // 현재 인덱스 업데이트 및 다음 프리로드 트리거
+        currentPlayingIndex = targetIndex
+        preloadAdjacentTracks(targetIndex)
+        return true
     }
 
     private fun resetPreload() {
@@ -271,12 +273,10 @@ class MusicService : MediaSessionService() {
             session: MediaSession,
             controller: MediaSession.ControllerInfo,
         ): MediaSession.ConnectionResult {
-            // CustomCommand 허용 목록 설정
             val availableCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
                 .add(SessionCommand(MusicCommand.ACTION_PRELOAD_ADJACENT, Bundle.EMPTY))
                 .add(SessionCommand(MusicCommand.ACTION_PLAY_PRELOADED, Bundle.EMPTY))
                 .add(SessionCommand(MusicCommand.ACTION_RESET_PRELOAD, Bundle.EMPTY))
-                .add(SessionCommand(MusicCommand.ACTION_GET_PRELOAD_STATUS, Bundle.EMPTY))
                 .build()
 
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
@@ -290,26 +290,29 @@ class MusicService : MediaSessionService() {
             customCommand: SessionCommand,
             args: Bundle,
         ): ListenableFuture<SessionResult> {
+            Log.d(TAG, "onCustomCommand received: ${customCommand.customAction}")
+            Log.d(TAG, "Args bundle: $args")
+
             val command = MusicCommand.fromAction(customCommand.customAction, args)
+            Log.d(TAG, "Parsed command: $command")
 
             val resultCode = when (command) {
                 is MusicCommand.PreloadAdjacentTracks -> {
+                    Log.d(TAG, "Handling PreloadAdjacentTracks: currentIndex=${command.currentIndex}")
                     preloadAdjacentTracks(command.currentIndex)
                     SessionResult.RESULT_SUCCESS
                 }
 
                 is MusicCommand.PlayPreloaded -> {
+                    Log.d(TAG, "Handling PlayPreloaded: mediaId=${command.mediaId}")
                     val success = playPreloadedTrack(command.mediaId)
+                    Log.d(TAG, "PlayPreloaded result: success=$success")
                     if (success) SessionResult.RESULT_SUCCESS else SessionResult.RESULT_ERROR_UNKNOWN
                 }
 
                 is MusicCommand.ResetPreload -> {
+                    Log.d(TAG, "Handling ResetPreload")
                     resetPreload()
-                    SessionResult.RESULT_SUCCESS
-                }
-
-                is MusicCommand.GetPreloadStatus -> {
-                    // 현재 프리로드 상태 반환 (확장 가능)
                     SessionResult.RESULT_SUCCESS
                 }
 
@@ -319,6 +322,7 @@ class MusicService : MediaSessionService() {
                 }
             }
 
+            Log.d(TAG, "Command result: $resultCode")
             return Futures.immediateFuture(SessionResult(resultCode))
         }
     }

@@ -248,9 +248,15 @@ class MediaControllerMusicPlayer @Inject constructor(
 
     override fun skipToNext() {
         if (currentIndex >= 0 && currentIndex < playlist.size - 1) {
-            currentIndex++
-            val nextTrack = playlist[currentIndex]
-            play(nextTrack)
+            val nextIndex = currentIndex + 1
+            val nextTrack = playlist[nextIndex]
+
+            // 프리로드된 MediaSource로 재생 시도
+            sendPlayPreloadedCommand(nextTrack.id)
+
+            // UI 상태 업데이트
+            currentIndex = nextIndex
+            _currentTrack.value = nextTrack
         }
     }
 
@@ -259,9 +265,15 @@ class MediaControllerMusicPlayer @Inject constructor(
 
         when {
             currentPos <= 5000L && currentIndex > 0 -> {
-                currentIndex--
-                val previousTrack = playlist[currentIndex]
-                play(previousTrack)
+                val prevIndex = currentIndex - 1
+                val previousTrack = playlist[prevIndex]
+
+                // 프리로드된 MediaSource로 재생 시도
+                sendPlayPreloadedCommand(previousTrack.id)
+
+                // UI 상태 업데이트
+                currentIndex = prevIndex
+                _currentTrack.value = previousTrack
             }
             else -> {
                 seekTo(0L)
@@ -296,6 +308,17 @@ class MediaControllerMusicPlayer @Inject constructor(
         mediaController?.sendCustomCommand(sessionCommand, command.toBundle())
             ?.addListener(
                 { Log.d(TAG, "Preload command sent for index: $currentIndex") },
+                { it.run() },
+            )
+    }
+
+    private fun sendPlayPreloadedCommand(mediaId: String) {
+        val command = MusicCommand.PlayPreloaded(mediaId)
+        val sessionCommand = SessionCommand(command.action, command.toBundle())
+
+        mediaController?.sendCustomCommand(sessionCommand, command.toBundle())
+            ?.addListener(
+                { Log.d(TAG, "PlayPreloaded command sent for mediaId: $mediaId") },
                 { it.run() },
             )
     }
