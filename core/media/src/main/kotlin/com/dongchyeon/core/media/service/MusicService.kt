@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
@@ -114,6 +116,26 @@ class MusicService : MediaSessionService() {
                 .setHandleAudioBecomingNoisy(true),
         )
 
+        // 에러 로깅을 위한 리스너 추가
+        player.addListener(object : Player.Listener {
+            override fun onPlayerError(error: PlaybackException) {
+                val currentMediaItem = player.currentMediaItem
+                val mediaId = currentMediaItem?.mediaId ?: "unknown"
+                val streamUrl = currentMediaItem?.localConfiguration?.uri?.toString() ?: "unknown"
+                val title = currentMediaItem?.mediaMetadata?.title ?: "unknown"
+
+                Log.e(TAG, "========== PLAYBACK ERROR ==========")
+                Log.e(TAG, "Error type: ${error.errorCodeName}")
+                Log.e(TAG, "Error code: ${error.errorCode}")
+                Log.e(TAG, "MediaId: $mediaId")
+                Log.e(TAG, "Stream URL: $streamUrl")
+                Log.e(TAG, "Track title: $title")
+                Log.e(TAG, "Error message: ${error.message}")
+                Log.e(TAG, "Cause: ${error.cause?.message}")
+                Log.e(TAG, "=====================================")
+            }
+        })
+
         mediaSession = MediaSession.Builder(this, player)
             .setCallback(MediaSessionCallback())
             .setSessionActivity(getPendingIntent())
@@ -182,7 +204,6 @@ class MusicService : MediaSessionService() {
         }
     }
 
-    // ==================== 프리로드 관련 메서드 (DefaultPreloadManager 기반) ====================
 
     /**
      * 인접 트랙 프리로드 요청
@@ -212,6 +233,8 @@ class MusicService : MediaSessionService() {
                 Log.d(TAG, "Added to preload: ${mediaItem.mediaId} (distance=$distance)")
             }
         }
+
+        preloadManager.invalidate()
 
         Log.d(TAG, "Preload triggered for index: $newIndex")
     }
