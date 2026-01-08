@@ -2,12 +2,14 @@ package com.dongchyeon.core.media.controller
 
 import android.content.ComponentName
 import android.content.Context
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionToken
-import com.dongchyeon.core.media.preload.MusicPreloadManager
+import com.dongchyeon.core.media.command.MusicCommand
 import com.dongchyeon.core.media.service.MusicService
 import com.dongchyeon.domain.model.PlaybackState
 import com.dongchyeon.domain.model.PlayerError
@@ -35,8 +37,11 @@ import javax.inject.Singleton
 @Singleton
 class MediaControllerMusicPlayer @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val preloadManager: MusicPreloadManager,
 ) : MusicPlayer {
+
+    companion object {
+        private const val TAG = "MediaControllerMusicPlayer"
+    }
 
     private var mediaController: MediaController? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -105,8 +110,8 @@ class MediaControllerMusicPlayer @Inject constructor(
                     currentIndex = index
                     _currentTrack.value = playlist[index]
 
-                    // 다음/이전 곡 프리로드 트리거
-                    preloadManager.onCurrentIndexChanged(playlist, index)
+                    // 다음/이전 곡 프리로드 트리거 (CustomCommand)
+                    sendPreloadCommand(index)
                 }
             }
 
@@ -236,8 +241,8 @@ class MediaControllerMusicPlayer @Inject constructor(
 
         if (tracks.isNotEmpty() && currentIndex < 0) {
             currentIndex = 0
-            // 플레이리스트 설정 시 다음 곡 프리로드 시작
-            preloadManager.onCurrentIndexChanged(tracks, 0)
+            // 플레이리스트 설정 시 다음 곡 프리로드 시작 (CustomCommand)
+            sendPreloadCommand(0)
         }
     }
 
@@ -279,8 +284,26 @@ class MediaControllerMusicPlayer @Inject constructor(
     }
 
     override fun release() {
-        preloadManager.release()
+        sendResetPreloadCommand()
         mediaController?.release()
         mediaController = null
+    }
+
+    private fun sendPreloadCommand(currentIndex: Int) {
+        val command = MusicCommand.PreloadAdjacentTracks(currentIndex)
+        val sessionCommand = SessionCommand(command.action, command.toBundle())
+
+        mediaController?.sendCustomCommand(sessionCommand, command.toBundle())
+            ?.addListener(
+                { Log.d(TAG, "Preload command sent for index: $currentIndex") },
+                { it.run() },
+            )
+    }
+
+    private fun sendResetPreloadCommand() {
+        val command = MusicCommand.ResetPreload
+        val sessionCommand = SessionCommand(command.action, android.os.Bundle.EMPTY)
+
+        mediaController?.sendCustomCommand(sessionCommand, android.os.Bundle.EMPTY)
     }
 }
