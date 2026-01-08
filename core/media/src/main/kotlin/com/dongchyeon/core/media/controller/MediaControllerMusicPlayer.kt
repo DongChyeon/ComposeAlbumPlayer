@@ -3,7 +3,9 @@ package com.dongchyeon.core.media.controller
 import android.content.ComponentName
 import android.content.Context
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -92,75 +94,82 @@ class MediaControllerMusicPlayer @Inject constructor(
     }
 
     private fun setupPlayerListener() {
-        mediaController?.addListener(object : Player.Listener {
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                updatePlaybackState()
-            }
-
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                updatePlaybackState()
-                if (playbackState == Player.STATE_READY) {
-                    _duration.value = mediaController?.duration ?: 0L
-                }
-            }
-
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                val index = mediaController?.currentMediaItemIndex ?: -1
-                if (index >= 0 && index < playlist.size) {
-                    currentIndex = index
-                    _currentTrack.value = playlist[index]
-
-                    // 다음/이전 곡 프리로드 트리거 (CustomCommand)
-                    sendPreloadCommand(index)
-                }
-            }
-
-            override fun onRepeatModeChanged(repeatMode: Int) {
-                _repeatMode.value = when (repeatMode) {
-                    Player.REPEAT_MODE_OFF -> RepeatMode.NONE
-                    Player.REPEAT_MODE_ONE -> RepeatMode.ONE
-                    Player.REPEAT_MODE_ALL -> RepeatMode.ALL
-                    else -> RepeatMode.NONE
-                }
-            }
-
-            override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-                _shuffleMode.value = if (shuffleModeEnabled) ShuffleMode.ON else ShuffleMode.OFF
-            }
-
-            override fun onPlayerError(error: PlaybackException) {
-                val errorMessage = when (error.errorCode) {
-                    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED ->
-                        "Network connection failed"
-                    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT ->
-                        "Network connection timed out"
-                    PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS ->
-                        "Unable to play this track"
-                    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND ->
-                        "Track not found"
-                    PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,
-                    PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED,
-                    ->
-                        "Unsupported audio format"
-                    else ->
-                        "Unable to play this track"
+        mediaController?.addListener(
+            object : Player.Listener {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    updatePlaybackState()
                 }
 
-                scope.launch {
-                    _playerError.emit(
-                        PlayerError(
-                            message = errorMessage,
-                            trackId = mediaController?.currentMediaItem?.mediaId,
-                        ),
-                    )
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    updatePlaybackState()
+                    if (playbackState == Player.STATE_READY) {
+                        _duration.value = mediaController?.duration ?: 0L
+                    }
                 }
 
-                // 다음 트랙으로 스킵
-                if (playlist.isNotEmpty() && currentIndex < playlist.size - 1) {
-                    skipToNext()
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    val index = mediaController?.currentMediaItemIndex ?: -1
+                    if (index >= 0 && index < playlist.size) {
+                        currentIndex = index
+                        _currentTrack.value = playlist[index]
+
+                        // 다음/이전 곡 프리로드 트리거 (CustomCommand)
+                        sendPreloadCommand(index)
+                    }
                 }
-            }
-        })
+
+                override fun onRepeatModeChanged(repeatMode: Int) {
+                    _repeatMode.value = when (repeatMode) {
+                        Player.REPEAT_MODE_OFF -> RepeatMode.NONE
+                        Player.REPEAT_MODE_ONE -> RepeatMode.ONE
+                        Player.REPEAT_MODE_ALL -> RepeatMode.ALL
+                        else -> RepeatMode.NONE
+                    }
+                }
+
+                override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                    _shuffleMode.value = if (shuffleModeEnabled) ShuffleMode.ON else ShuffleMode.OFF
+                }
+
+                override fun onPlayerError(error: PlaybackException) {
+                    val errorMessage = when (error.errorCode) {
+                        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED ->
+                            "Network connection failed"
+
+                        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT ->
+                            "Network connection timed out"
+
+                        PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS ->
+                            "Unable to play this track"
+
+                        PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND ->
+                            "Track not found"
+
+                        PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,
+                        PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED,
+                            ->
+                            "Unsupported audio format"
+
+                        else ->
+                            "Unable to play this track"
+                    }
+
+                    scope.launch {
+                        _playerError.emit(
+                            PlayerError(
+                                message = errorMessage,
+                                trackId = mediaController?.currentMediaItem?.mediaId,
+                            ),
+                        )
+                    }
+
+                    // 다음 트랙으로 스킵
+                    if (playlist.isNotEmpty() && currentIndex < playlist.size - 1) {
+                        skipToNext()
+                    }
+                }
+            },
+        )
     }
 
     private fun updatePlaybackState() {
@@ -196,10 +205,7 @@ class MediaControllerMusicPlayer @Inject constructor(
             mediaController?.seekTo(indexInPlaylist, 0)
         } else {
             // 플레이리스트에 없으면 단일 트랙 재생
-            val mediaItem = MediaItem.Builder()
-                .setUri(track.streamUrl)
-                .setMediaId(track.id)
-                .build()
+            val mediaItem = track.toMediaItem()
             mediaController?.setMediaItem(mediaItem)
             mediaController?.prepare()
         }
@@ -229,12 +235,7 @@ class MediaControllerMusicPlayer @Inject constructor(
     override fun setPlaylist(tracks: List<Track>) {
         playlist = tracks
 
-        val mediaItems = tracks.map { track ->
-            MediaItem.Builder()
-                .setUri(track.streamUrl)
-                .setMediaId(track.id)
-                .build()
-        }
+        val mediaItems = tracks.map { it.toMediaItem() }
 
         mediaController?.setMediaItems(mediaItems)
         mediaController?.prepare()
@@ -328,5 +329,19 @@ class MediaControllerMusicPlayer @Inject constructor(
         val sessionCommand = SessionCommand(command.action, android.os.Bundle.EMPTY)
 
         mediaController?.sendCustomCommand(sessionCommand, android.os.Bundle.EMPTY)
+    }
+
+    private fun Track.toMediaItem(): MediaItem {
+        return MediaItem.Builder()
+            .setUri(streamUrl)
+            .setMediaId(id)
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(title)
+                    .setArtist(artist)
+                    .setArtworkUri(artworkUrl.toUri())
+                    .build(),
+            )
+            .build()
     }
 }
