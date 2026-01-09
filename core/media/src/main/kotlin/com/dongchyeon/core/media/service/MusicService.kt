@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -16,6 +17,8 @@ import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.preload.DefaultPreloadManager
+import androidx.media3.exoplayer.source.preload.PreloadException
+import androidx.media3.exoplayer.source.preload.PreloadManagerListener
 import androidx.media3.exoplayer.source.preload.TargetPreloadStatusControl
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -69,7 +72,7 @@ class MusicService : MediaSessionService() {
     // 현재 재생 중인 인덱스 (프리로드 우선순위 계산에 사용)
     private var currentPlayingIndex: Int = C.INDEX_UNSET
 
-    override fun onCreate() {
+    @androidx.annotation.OptIn(UnstableApi::class) override fun onCreate() {
         super.onCreate()
 
         // 캐시를 적용한 MediaSourceFactory 생성
@@ -100,7 +103,27 @@ class MusicService : MediaSessionService() {
             MusicPreloadStatusControl(),
         )
 
-        preloadManager = preloadManagerBuilder.build()
+        preloadManager = preloadManagerBuilder.build().apply {
+            addListener(object : PreloadManagerListener {
+                override fun onError(exception: PreloadException) {
+                    val mediaItem = exception.mediaItem
+                    val cause = exception.cause
+                    val errorMessage = cause?.message ?: exception.message ?: "Unknown error"
+
+                    Log.e(TAG, "========== PRELOAD ERROR ==========")
+                    Log.e(TAG, "MediaItem ID: ${mediaItem.mediaId}")
+                    Log.e(TAG, "MediaItem URI: ${mediaItem.localConfiguration?.uri}")
+                    Log.e(TAG, "Error message: $errorMessage")
+                    Log.e(TAG, "Cause type: ${cause?.javaClass?.simpleName}")
+                    Log.e(TAG, "Cause message: ${cause?.message}")
+                    Log.e(TAG, "===================================")
+                }
+
+                override fun onCompleted(mediaItem: MediaItem) {
+                    Log.d(TAG, "Preload completed for: ${mediaItem.mediaId}")
+                }
+            })
+        }
 
         player = preloadManagerBuilder.buildExoPlayer(
             ExoPlayer.Builder(this)
@@ -272,10 +295,12 @@ class MusicService : MediaSessionService() {
         Log.d(TAG, "Found targetIndex: $targetIndex for mediaId: $mediaId")
 
         // 플레이리스트 내에서 트랙 전환 (seekTo로 플레이리스트 유지)
+        // prepare()를 호출하여 에러 상태에서도 복구할 수 있도록 함
         player.seekTo(targetIndex, 0)
+        player.prepare()
         player.play()
 
-        Log.d(TAG, "seekTo($targetIndex, 0) and play() called")
+        Log.d(TAG, "seekTo($targetIndex, 0), prepare() and play() called")
 
         // 현재 인덱스 업데이트 및 다음 프리로드 트리거
         currentPlayingIndex = targetIndex
