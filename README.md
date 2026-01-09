@@ -23,14 +23,15 @@ Jetpack Compose와 Clean Architecture로 구현된 Android 음악 플레이어 �
 
 ## 🛠️ 기술 스택
 
-| 분류 | 기술 |
-|------|------|
-| **UI** | Jetpack Compose, Material3 |
-| **DI** | Hilt |
-| **비동기** | Kotlin Coroutines, Flow |
-| **네트워크** | Retrofit, OkHttp, Kotlinx Serialization |
-| **이미지** | Coil |
-| **미디어** | Media3 ExoPlayer, MediaSessionService |
+| 분류               | 기술                                     |
+|------------------|----------------------------------------|
+| **UI**           | Jetpack Compose, Material3             |
+| **DI**           | Hilt                                   |
+| **Navigation**   | Navigation3                            |
+| **Asynchronous** | Kotlin Coroutines, Flow                |
+| **Network**      | Retrofit, OkHttp, Kotlinx Serialization |
+| **Image**        | Coil                                   |
+| **Media**        | Media3 ExoPlayer, MediaSessionService  |
 
 ## 🎧 미디어 시스템
 

@@ -147,7 +147,7 @@ class MediaControllerMusicPlayer @Inject constructor(
 
                         PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,
                         PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED,
-                            ->
+                        ->
                             "Unsupported audio format"
 
                         else ->
