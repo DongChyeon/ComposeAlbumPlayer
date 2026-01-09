@@ -7,12 +7,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
@@ -26,7 +25,7 @@ import com.dongchyeon.feature.player.navigation.PlayerNavKey
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlbumPlayerApp(modifier: Modifier = Modifier) {
-    val backStack = rememberSaveable { mutableStateListOf<Any>(HomeNavKey) }
+    val backStack = rememberNavBackStack(HomeNavKey)
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
