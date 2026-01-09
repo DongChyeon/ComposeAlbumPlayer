@@ -1,6 +1,5 @@
 package com.dongchyeon.feature.album
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.dongchyeon.core.ui.base.BaseViewModel
 import com.dongchyeon.domain.model.PlaybackState
@@ -9,6 +8,9 @@ import com.dongchyeon.domain.model.ShuffleMode
 import com.dongchyeon.domain.model.Track
 import com.dongchyeon.domain.player.MusicPlayer
 import com.dongchyeon.domain.repository.AlbumRepository
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,18 +20,20 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class AlbumPlayerViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+@HiltViewModel(assistedFactory = AlbumPlayerViewModel.Factory::class)
+class AlbumPlayerViewModel @AssistedInject constructor(
+    @Assisted private val albumId: String,
     private val albumRepository: AlbumRepository,
     private val musicPlayer: MusicPlayer,
 ) : BaseViewModel<AlbumPlayerUiState, AlbumPlayerIntent, AlbumPlayerSideEffect>(
     initialState = AlbumPlayerUiState(isLoading = true),
 ) {
 
-    private val albumId: String = savedStateHandle["albumId"] ?: ""
+    @AssistedFactory
+    interface Factory {
+        fun create(albumId: String): AlbumPlayerViewModel
+    }
 
     // 실시간으로 변경되는 값들은 별도 Flow로 노출
     val currentPositionSeconds: StateFlow<Int> = musicPlayer.currentPosition

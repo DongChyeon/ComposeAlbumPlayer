@@ -21,15 +21,19 @@ import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 import com.dongchyeon.core.designsystem.theme.Spacing
@@ -40,12 +44,40 @@ import com.dongchyeon.domain.model.ShuffleMode
 import com.dongchyeon.domain.model.Track
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerRoute(
-    viewModel: AlbumPlayerViewModel,
+    albumId: String,
+    snackbarHostState: SnackbarHostState,
+    onNavigateBack: () -> Unit,
 ) {
+    val viewModel: AlbumPlayerViewModel = hiltViewModel<AlbumPlayerViewModel, AlbumPlayerViewModel.Factory>(
+        creationCallback = { factory: AlbumPlayerViewModel.Factory ->
+            factory.create(albumId = albumId)
+        },
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collect { sideEffect ->
+            when (sideEffect) {
+                is AlbumPlayerSideEffect.ShowPlaybackError -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(sideEffect.message)
+                    }
+                }
+                is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(sideEffect.message)
+                        onNavigateBack()
+                    }
+                }
+                else -> { /* Album 화면에서 처리 */ }
+            }
+        }
+    }
 
     PlayerScreen(
         uiState = uiState,

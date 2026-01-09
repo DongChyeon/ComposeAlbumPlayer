@@ -19,13 +19,17 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 import com.dongchyeon.core.designsystem.theme.Spacing
@@ -34,12 +38,46 @@ import com.dongchyeon.core.ui.components.ErrorMessage
 import com.dongchyeon.core.ui.components.LoadingIndicator
 import com.dongchyeon.domain.model.Album
 import com.dongchyeon.domain.model.Track
+import kotlinx.coroutines.launch
 
 @Composable
 fun AlbumRoute(
-    viewModel: AlbumPlayerViewModel,
+    albumId: String,
+    snackbarHostState: SnackbarHostState,
+    onNavigateToPlayer: (String) -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
+    val viewModel: AlbumPlayerViewModel = hiltViewModel<AlbumPlayerViewModel, AlbumPlayerViewModel.Factory>(
+        creationCallback = { factory: AlbumPlayerViewModel.Factory ->
+            factory.create(albumId = albumId)
+        },
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collect { sideEffect ->
+            when (sideEffect) {
+                is AlbumPlayerSideEffect.NavigateBack -> {
+                    onNavigateBack()
+                }
+                is AlbumPlayerSideEffect.NavigateToPlayer -> {
+                    onNavigateToPlayer(sideEffect.track.id)
+                }
+                is AlbumPlayerSideEffect.ShowPlaybackError -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(sideEffect.message)
+                    }
+                }
+                is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(sideEffect.message)
+                        onNavigateBack()
+                    }
+                }
+            }
+        }
+    }
 
     AlbumScreen(
         uiState = uiState,

@@ -1,6 +1,7 @@
 plugins {
     id("cap.android.application")
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
@@ -37,9 +38,13 @@ dependencies {
     // Core Modules
     implementation(projects.core.designsystem)
     implementation(projects.core.network)
+    implementation(projects.core.ui)
 
     implementation(projects.core.data)
     implementation(projects.core.media)
+
+    // Domain Module
+    implementation(projects.domain)
 
     // Android Core
     implementation(libs.androidx.core.ktx)
@@ -58,10 +63,15 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Navigation3
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.hilt.navigation.compose)
 
-    // Navigation
-    implementation(libs.androidx.navigation.compose)
+    // Serialization (for type-safe routes)
+    implementation(libs.kotlinx.serialization.json)
 
     // Test
     testImplementation(libs.junit)

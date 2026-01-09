@@ -7,16 +7,26 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
-import com.dongchyeon.compose.album.player.navigation.NavGraph
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
+import com.dongchyeon.feature.album.AlbumRoute
+import com.dongchyeon.feature.album.PlayerRoute
+import com.dongchyeon.feature.album.navigation.AlbumNavKey
+import com.dongchyeon.feature.album.navigation.PlayerNavKey
+import com.dongchyeon.feature.home.HomeRoute
+import com.dongchyeon.feature.home.navigation.HomeNavKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlbumPlayerApp(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
+    val backStack = rememberSaveable { mutableStateListOf<Any>(HomeNavKey) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
@@ -24,12 +34,44 @@ fun AlbumPlayerApp(modifier: Modifier = Modifier) {
         containerColor = AlbumPlayerTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
-        NavGraph(
-            navController = navController,
-            snackbarHostState = snackbarHostState,
+        NavDisplay(
+            backStack = backStack,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
+            onBack = { backStack.removeLastOrNull() },
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
+            entryProvider = entryProvider {
+                entry<HomeNavKey> {
+                    HomeRoute(
+                        onNavigateToAlbum = { albumId ->
+                            backStack.add(AlbumNavKey(albumId = albumId))
+                        },
+                    )
+                }
+
+                entry<AlbumNavKey> { destination ->
+                    AlbumRoute(
+                        albumId = destination.albumId,
+                        snackbarHostState = snackbarHostState,
+                        onNavigateToPlayer = { trackId ->
+                            backStack.add(PlayerNavKey(albumId = destination.albumId, trackId = trackId))
+                        },
+                        onNavigateBack = { backStack.removeLastOrNull() },
+                    )
+                }
+
+                entry<PlayerNavKey> { destination ->
+                    PlayerRoute(
+                        albumId = destination.albumId,
+                        snackbarHostState = snackbarHostState,
+                        onNavigateBack = { backStack.removeLastOrNull() },
+                    )
+                }
+            },
         )
     }
 }
