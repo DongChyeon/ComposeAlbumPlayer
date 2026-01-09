@@ -17,11 +17,11 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 import com.dongchyeon.feature.album.AlbumRoute
-import com.dongchyeon.feature.album.PlayerRoute
 import com.dongchyeon.feature.album.navigation.AlbumNavKey
-import com.dongchyeon.feature.album.navigation.PlayerNavKey
 import com.dongchyeon.feature.home.HomeRoute
 import com.dongchyeon.feature.home.navigation.HomeNavKey
+import com.dongchyeon.feature.player.PlayerRoute
+import com.dongchyeon.feature.player.navigation.PlayerNavKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,16 +57,15 @@ fun AlbumPlayerApp(modifier: Modifier = Modifier) {
                     AlbumRoute(
                         albumId = destination.albumId,
                         snackbarHostState = snackbarHostState,
-                        onNavigateToPlayer = { trackId ->
-                            backStack.add(PlayerNavKey(albumId = destination.albumId, trackId = trackId))
+                        onNavigateToPlayer = {
+                            backStack.add(PlayerNavKey)
                         },
                         onNavigateBack = { backStack.removeLastOrNull() },
                     )
                 }
 
-                entry<PlayerNavKey> { destination ->
+                entry<PlayerNavKey> {
                     PlayerRoute(
-                        albumId = destination.albumId,
                         snackbarHostState = snackbarHostState,
                         onNavigateBack = { backStack.removeLastOrNull() },
                     )

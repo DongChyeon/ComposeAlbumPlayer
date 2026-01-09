@@ -34,6 +34,7 @@ dependencies {
     // Feature Modules (Navigation)
     implementation(projects.feature.home)
     implementation(projects.feature.album)
+    implementation(projects.feature.player)
 
     // Core Modules
     implementation(projects.core.designsystem)

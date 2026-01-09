@@ -29,7 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dongchyeon.core.designsystem.theme.AlbumPlayerTheme
 import com.dongchyeon.core.designsystem.theme.Spacing
@@ -44,11 +44,11 @@ import kotlinx.coroutines.launch
 fun AlbumRoute(
     albumId: String,
     snackbarHostState: SnackbarHostState,
-    onNavigateToPlayer: (String) -> Unit,
+    onNavigateToPlayer: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    val viewModel: AlbumPlayerViewModel = hiltViewModel<AlbumPlayerViewModel, AlbumPlayerViewModel.Factory>(
-        creationCallback = { factory: AlbumPlayerViewModel.Factory ->
+    val viewModel: AlbumViewModel = hiltViewModel<AlbumViewModel, AlbumViewModel.Factory>(
+        creationCallback = { factory: AlbumViewModel.Factory ->
             factory.create(albumId = albumId)
         },
     )
@@ -58,18 +58,13 @@ fun AlbumRoute(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { sideEffect ->
             when (sideEffect) {
-                is AlbumPlayerSideEffect.NavigateBack -> {
+                is AlbumSideEffect.NavigateBack -> {
                     onNavigateBack()
                 }
-                is AlbumPlayerSideEffect.NavigateToPlayer -> {
-                    onNavigateToPlayer(sideEffect.track.id)
+                is AlbumSideEffect.NavigateToPlayer -> {
+                    onNavigateToPlayer()
                 }
-                is AlbumPlayerSideEffect.ShowPlaybackError -> {
-                    scope.launch {
-                        snackbarHostState.showSnackbar(sideEffect.message)
-                    }
-                }
-                is AlbumPlayerSideEffect.ShowErrorAndNavigateBack -> {
+                is AlbumSideEffect.ShowErrorAndNavigateBack -> {
                     scope.launch {
                         snackbarHostState.showSnackbar(sideEffect.message)
                         onNavigateBack()
@@ -87,8 +82,8 @@ fun AlbumRoute(
 
 @Composable
 fun AlbumScreen(
-    uiState: AlbumPlayerUiState,
-    onIntent: (AlbumPlayerIntent) -> Unit,
+    uiState: AlbumUiState,
+    onIntent: (AlbumIntent) -> Unit,
 ) {
     when {
         uiState.isLoading -> {
@@ -97,17 +92,17 @@ fun AlbumScreen(
         uiState.error != null -> {
             ErrorMessage(
                 message = uiState.error,
-                onRetry = { onIntent(AlbumPlayerIntent.Retry) },
+                onRetry = { onIntent(AlbumIntent.Retry) },
             )
         }
         uiState.album != null -> {
             AlbumContent(
                 album = uiState.album,
                 onTrackClick = { track ->
-                    onIntent(AlbumPlayerIntent.NavigateToPlayer(track))
+                    onIntent(AlbumIntent.NavigateToPlayer(track))
                 },
                 onNavigateBack = {
-                    onIntent(AlbumPlayerIntent.NavigateBack)
+                    onIntent(AlbumIntent.NavigateBack)
                 },
             )
         }
@@ -254,7 +249,7 @@ private fun formatDuration(milliseconds: Long): String {
 private fun AlbumScreenPreview() {
     AlbumPlayerTheme {
         AlbumScreen(
-            uiState = AlbumPlayerUiState(
+            uiState = AlbumUiState(
                 album = Album(
                     id = "albumId",
                     title = "Album Title",
