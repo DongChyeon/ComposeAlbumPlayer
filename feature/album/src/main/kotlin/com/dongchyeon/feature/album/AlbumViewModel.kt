@@ -10,8 +10,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = AlbumViewModel.Factory::class)
@@ -30,7 +28,6 @@ class AlbumViewModel @AssistedInject constructor(
 
     init {
         loadAlbumData()
-        observePlayerErrors()
     }
 
     override fun handleIntent(intent: AlbumIntent) {
@@ -98,14 +95,6 @@ class AlbumViewModel @AssistedInject constructor(
                 }
             }
         }
-    }
-
-    private fun observePlayerErrors() {
-        musicPlayer.playerError
-            .onEach { error ->
-                sendSideEffect(AlbumSideEffect.ShowPlaybackError(error.message))
-            }
-            .launchIn(viewModelScope)
     }
 
     private fun playTrack(track: Track) {
